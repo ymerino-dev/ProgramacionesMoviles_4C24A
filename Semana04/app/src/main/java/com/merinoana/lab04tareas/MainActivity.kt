@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.merinoana.lab04tareas.ui.theme.Lab04TareasTheme
 
 data class Tarea(
@@ -45,7 +44,6 @@ fun ItemTarea(
     onEliminar: () -> Unit,
     onCambiarEstado: (Boolean) -> Unit
 ) {
-    // Mejora UI: Tarjetas con bordes redondeados y sombra ligera
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -76,13 +74,8 @@ fun ItemTarea(
                     fontWeight = FontWeight.Medium
                 )
             }
-            // Mejora UI: Botón de ícono en lugar de texto
             IconButton(onClick = onEliminar) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar tarea",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                Text(text = "🗑️", fontSize = 22.sp)
             }
         }
     }
@@ -100,7 +93,6 @@ fun PantallaTareas(modifier: Modifier = Modifier) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Mejora UI: Título centrado y actualizado
         Text(
             text = "Lista de tareas - Tecsup",
             style = MaterialTheme.typography.headlineSmall,
@@ -109,7 +101,6 @@ fun PantallaTareas(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
         )
 
-        // Mejora UI: Placeholder actualizado y bordes redondeados
         OutlinedTextField(
             value = textoTarea,
             onValueChange = { textoTarea = it },
@@ -121,7 +112,6 @@ fun PantallaTareas(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Mejora UI: Botón redondeado
         Button(
             onClick = {
                 if (textoTarea.isNotBlank()) {
