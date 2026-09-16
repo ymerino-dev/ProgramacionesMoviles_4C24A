@@ -49,6 +49,8 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
     var notaPOO by remember { mutableStateOf(0f) }
     var notaMoviles by remember { mutableStateOf(0f) }
     var notaBD by remember { mutableStateOf(0f) }
+    var redondear by remember { mutableStateOf(false) }
+    var confirmar by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -121,7 +123,53 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
             valueRange = 0f..20f,
             steps = 19
         )
+        Spacer(modifier = Modifier.height(24.dp))
 
+        // Switch de redondeo
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Redondear promedio final")
+            androidx.compose.material3.Switch(
+                checked = redondear,
+                onCheckedChange = { redondear = it }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Checkbox de confirmación
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.Checkbox(
+                checked = confirmar,
+                onCheckedChange = { confirmar = it }
+            )
+            Text(text = "Confirmo que las notas son correctas")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Botón condicionado
+        androidx.compose.material3.Button(
+            onClick = { /* Aquí irá el cálculo en la Fase 4 */ },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = confirmar // La magia: se habilita solo si el checkbox es true
+        ) {
+            Text(text = "CALCULAR PROMEDIO")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mensaje inferior
+        Text(
+            text = "Asigna las notas y confirma para calcular",
+            color = MaterialTheme.colorScheme.outline
+        )
 
     }
 }
