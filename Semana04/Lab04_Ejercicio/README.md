@@ -24,7 +24,7 @@
 
 ## Capturas del Emulador
 
-| Estado del Emulador | Captura de Pantalla | Descripción |
-| :---: | :---: | :--- |
-| **Carrito Vacío** | *(Inserta tu imagen aquí)* | Vista inicial con el mensaje central de estado vacío y los montos en S/ 0.00. |
-| **Lista con Productos** | *(Inserta tu imagen aquí)* | Vista con productos agregados en la `LazyColumn`, importes calculados y totales actualizados. |
+| Estado del Emulador |        Captura de Pantalla         | Descripción |
+| :---: |:----------------------------------:| :--- |
+| **Carrito Vacío** | *<img src="cap1.png" width="300">* | Vista inicial con el mensaje central de estado vacío y los montos en S/ 0.00. |
+| **Lista con Productos** | *<img src="cap2.png" width="300">* | Vista con productos agregados en la `LazyColumn`, importes calculados y totales actualizados. |
