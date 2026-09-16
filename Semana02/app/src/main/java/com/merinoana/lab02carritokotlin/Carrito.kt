@@ -18,4 +18,8 @@ fun main(){
     carrito.add(Producto("Mouse Logitech", 45.5, 2))
     carrito.add(Producto("Audifonos Sony", 120.0, 1))
     carrito.add(Producto("USB Kingston 64GB", 75.0, 3))
+
+    for (producto in carrito) {
+        println("Producto agregado: ${producto.nombre}")
+    }
 }
