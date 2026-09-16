@@ -8,4 +8,9 @@ fun main(){
     println("==================================")
     println("   CARRITO DE COMPRAS - TECSUP    ")
     println("==================================")
+
+    val nombreCliente = "Ana Merino"
+    val carrito = mutableListOf<Producto>()
+
+    println("Cliente: $nombreCliente\n")
 }
