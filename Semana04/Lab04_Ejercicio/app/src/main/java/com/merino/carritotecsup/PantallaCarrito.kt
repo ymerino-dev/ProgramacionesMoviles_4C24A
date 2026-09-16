@@ -2,9 +2,15 @@ package com.merino.carritotecsup
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -72,11 +78,45 @@ fun PantallaCarrito() {
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
+            items(productos) { producto ->
+                TarjetaProducto(
+                    producto = producto,
+                    onEliminar = { productos.remove(producto) }
+                )
+            }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = "Productos en lista: ${productos.size}")
+    }
+}
+@Composable
+fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = producto.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "S/ ${producto.precio} x ${producto.cantidad}",
+                    color = Color.Gray
+                )
+                Text(
+                    text = "Importe: S/ ${String.format("%.2f", producto.precio * producto.cantidad)}"
+                )
+            }
+            IconButton(onClick = onEliminar) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }
