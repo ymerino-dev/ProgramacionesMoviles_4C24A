@@ -1,7 +1,10 @@
 package com.merinoana.calendariocuotas
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun main() {
     println("=== SISTEMA DE PAGOS ===")
     print("Ingrese el nombre del producto: ")
