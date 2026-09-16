@@ -1,6 +1,7 @@
 package com.merino.carritotecsup
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -62,6 +63,16 @@ fun PantallaCarrito() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("AGREGAR")
+        }
+
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
