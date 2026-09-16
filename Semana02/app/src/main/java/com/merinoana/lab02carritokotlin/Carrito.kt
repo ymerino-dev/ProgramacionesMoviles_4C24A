@@ -50,3 +50,11 @@ fun calcularIGV(subtotal: Double): Double {
 fun calcularTotal(subtotal: Double, igv: Double): Double {
     return subtotal + igv
 }
+
+fun calcularDescuento(total: Double): Double {
+    return when {
+        total > 5000 -> total * 0.10
+        total > 3000 -> total * 0.05
+        else -> 0.0
+    }
+}
