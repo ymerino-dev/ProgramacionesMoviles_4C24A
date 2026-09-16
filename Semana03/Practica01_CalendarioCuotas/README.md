@@ -7,6 +7,10 @@
 ## Descripción del Proyecto
 Esta es una aplicación de consola desarrollada en Kotlin que simula un sistema de pagos generando un cronograma mensual automatizado.
 
+#### Capturas
+
+<img src="foto1.jpeg" width="500">
+
 Características técnicas de la lógica implementada:
 * **Ingreso y Validación:** Solicita los datos del producto y utiliza un ciclo `while` para validar estrictamente que el usuario solo pueda elegir 6, 12 o 24 cuotas.
 * **Cálculo de Interés:** Aplica un interés dinámico (20%, 40% o 60%) dependiendo de las cuotas elegidas utilizando la estructura de decisión múltiple `when`.
