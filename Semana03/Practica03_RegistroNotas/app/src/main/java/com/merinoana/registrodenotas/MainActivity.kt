@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.merinoana.registrodenotas.ui.theme.RegistroDeNotasTheme
 import kotlin.math.roundToInt
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,6 +149,13 @@ fun PantallaRegistroNotas(modifier: Modifier = Modifier) {
                 final >= 10 -> "EN RECUPERACIÓN" to Color(0xFFFFC107)
                 else -> "DESAPROBADO" to Color(0xFFF44336)
             }
+
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()) // ¡Esta es la línea mágica!
+            ) {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
