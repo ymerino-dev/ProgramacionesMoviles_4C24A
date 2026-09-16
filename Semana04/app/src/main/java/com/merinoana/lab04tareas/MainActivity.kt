@@ -7,14 +7,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.merinoana.lab04tareas.ui.theme.Lab04TareasTheme
 
-// 1. El modelo de datos
 data class Tarea(
     val id: Int,
     val nombre: String,
@@ -35,26 +39,31 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// 2. El diseño de cada fila de la lista
 @Composable
 fun ItemTarea(
     tarea: Tarea,
     onEliminar: () -> Unit,
     onCambiarEstado: (Boolean) -> Unit
 ) {
+    // Mejora UI: Tarjetas con bordes redondeados y sombra ligera
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = tarea.completada,
@@ -64,17 +73,21 @@ fun ItemTarea(
                 Text(
                     text = tarea.nombre,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 12.dp)
+                    fontWeight = FontWeight.Medium
                 )
             }
-            Button(onClick = onEliminar) {
-                Text("Eliminar")
+            // Mejora UI: Botón de ícono en lugar de texto
+            IconButton(onClick = onEliminar) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar tarea",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
 }
 
-// 3. La pantalla principal con el estado
 @Composable
 fun PantallaTareas(modifier: Modifier = Modifier) {
     var textoTarea by remember { mutableStateOf("") }
@@ -84,52 +97,60 @@ fun PantallaTareas(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Mejora UI: Título centrado y actualizado
         Text(
-            text = "Lista de tareas",
-            style = MaterialTheme.typography.headlineMedium
+            text = "Lista de tareas - Tecsup",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mejora UI: Placeholder actualizado y bordes redondeados
         OutlinedTextField(
             value = textoTarea,
             onValueChange = { textoTarea = it },
-            label = { Text("Ingrese una tarea") },
-            modifier = Modifier.fillMaxWidth()
+            placeholder = { Text("¿Qué tarea tienes pendiente?") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
         )
-        Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Mejora UI: Botón redondeado
         Button(
             onClick = {
                 if (textoTarea.isNotBlank()) {
-                    listaTareas.add(
-                        Tarea(
-                            id = contadorId,
-                            nombre = textoTarea
-                        )
-                    )
+                    listaTareas.add(Tarea(id = contadorId, nombre = textoTarea))
                     contadorId++
                     textoTarea = ""
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Agregar tarea")
+            Text("Agregar tarea", fontWeight = FontWeight.Bold)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = "Total de tareas: ${listaTareas.size}",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.align(Alignment.Start)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // LazyColumn es especial para listas largas en Compose
         LazyColumn {
             items(listaTareas, key = { it.id }) { tarea ->
                 ItemTarea(
                     tarea = tarea,
-                    onEliminar = {
-                        listaTareas.remove(tarea)
-                    },
+                    onEliminar = { listaTareas.remove(tarea) },
                     onCambiarEstado = { completada ->
                         val index = listaTareas.indexOf(tarea)
                         if (index != -1) {
