@@ -8,7 +8,9 @@
 Aplicación de consola en Kotlin que simula un carrito de compras. Utiliza una `data class` para modelar los productos, funciones para modularizar los cálculos matemáticos (Subtotal, IGV, Total), y estructuras de decisión (`when`) para aplicar descuentos.
 
 ## Resultado en Consola
-<img src="consola_lab02.png" width="400">
+<img src="cap1.jpeg" width="400">
+<img src="cap2.jpeg" width="400">
+<img src="cap3.jpeg" width="400">
 
 ---
 
