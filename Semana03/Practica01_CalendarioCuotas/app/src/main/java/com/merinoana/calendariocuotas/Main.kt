@@ -1,4 +1,6 @@
 package com.merinoana.calendariocuotas
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 fun main() {
     println("=== SISTEMA DE PAGOS ===")
@@ -40,5 +42,34 @@ fun main() {
     println("\nPxC -> Monto Inicial: $montoInicial")
     println("Monto a Pagar: $montoAPagar \t Interes: $interes")
     println("Pago Mensual: $pagoMensual\n")
+
+    // 4. Imprimir la cabecera de la tabla
+    println(String.format("%-4s %-12s %-10s %-10s %-10s", "N-", "FECHA", "MONTO", "P.Mensual", "Resta Pago"))
+
+    // 5. Lógica del calendario y restas
+    val fechaActual = LocalDate.now()
+    val formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    var montoFila = montoAPagar // El monto empieza siendo el total a pagar
+
+    for (i in 1..cuotas) {
+        // Generamos la fecha del próximo mes
+        val fechaPago = fechaActual.plusMonths(i.toLong())
+
+        // Calculamos cuánto queda por pagar
+        val restaPago = montoFila - pagoMensual
+
+        // Imprimimos la fila alineada
+        println(String.format("%-4d %-12s %-10.2f %-10.2f %-10.2f",
+            i,
+            fechaPago.format(formatoFecha),
+            montoFila,
+            pagoMensual,
+            restaPago
+        ))
+
+        // Actualizamos el monto para el siguiente ciclo
+        montoFila = restaPago
+    }
 
 }
