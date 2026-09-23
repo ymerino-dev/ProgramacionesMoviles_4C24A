@@ -11,13 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MisCitasScreen() {
-    // Datos simulados de citas previas y confirmadas
-    val citas = listOf(
-        Triple("Dra. Ana Torres", "Jue 26 - 9:00 am", "Confirmada"),
-        Triple("Dr. Luis Vega", "Vie 20 - 10:30 am", "Completada")
-    )
-
+fun MisCitasScreen(citas: List<Triple<String, String, String>>) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Mis Citas", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
@@ -29,7 +23,6 @@ fun MisCitasScreen() {
                         Text(medico, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         Text(fecha, style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Diferenciación visual de los estados exigida en la rúbrica
                         Text(
                             text = estado,
                             color = if (estado == "Confirmada") Color(0xFF4CAF50) else Color.Gray,

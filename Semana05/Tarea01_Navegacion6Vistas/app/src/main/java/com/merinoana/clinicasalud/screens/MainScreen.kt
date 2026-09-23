@@ -25,7 +25,12 @@ fun MainScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var currentRoute by remember { mutableStateOf(Screen.Inicio.route) }
-
+    val citasGlobales = remember {
+        mutableStateListOf(
+            Triple("Dra. Ana Torres", "Jue 26 - 9:00 am", "Confirmada"),
+            Triple("Dr. Luis Vega", "Vie 20 - 10:30 am", "Completada")
+        )
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -127,23 +132,10 @@ fun MainScreen(navController: NavHostController) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Inicio.route) { InicioScreen(navController) }
-                composable(Screen.MisCitas.route) { MisCitasScreen() }
+                composable(Screen.MisCitas.route) { MisCitasScreen(citasGlobales) }
+                composable(Screen.Historial.route) { HistorialScreen() }
+                composable(Screen.MiPerfil.route) { MiPerfilScreen() }
 
-                // Pantalla temporal para Historial Médico
-                composable(Screen.Historial.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No hay historial médico disponible.", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-
-                // Pantalla temporal para Mi Perfil (Paciente)
-                composable(Screen.MiPerfil.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Perfil de Ana Yanira Merino Ramos", style = MaterialTheme.typography.titleLarge)
-                    }
-                }
-
-                // Rutas con extracción de parámetros (Flujo de reserva)
                 composable(Screen.Perfil.route) { backStackEntry ->
                     val medico = backStackEntry.arguments?.getString("medico")
                     PerfilScreen(navController, medico)
@@ -156,7 +148,9 @@ fun MainScreen(navController: NavHostController) {
                     val medico = backStackEntry.arguments?.getString("medico")
                     val fecha = backStackEntry.arguments?.getString("fecha")
                     val hora = backStackEntry.arguments?.getString("hora")
-                    ConfirmacionScreen(navController, medico, fecha, hora)
+                    ConfirmacionScreen(navController, medico, fecha, hora) { nuevaCita ->
+                        citasGlobales.add(0, nuevaCita) // Añade la nueva cita arriba en la lista
+                    }
                 }
             }
         }
