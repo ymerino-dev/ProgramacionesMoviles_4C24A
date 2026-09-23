@@ -1,40 +1,44 @@
 package com.merinoana.navlab.navigation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.merinoana.navlab.navigation.Screen
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.merinoana.navlab.screens.DetailScreen
+import com.merinoana.navlab.screens.HomeScreen
+import com.merinoana.navlab.screens.ListScreen
+import com.merinoana.navlab.screens.ProfileScreen
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+fun AppNavigation() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route
     ) {
-        Text(
-            text = "Pantalla Tecsup",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = { navController.navigate(Screen.List.route) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Ver lista de elementos")
+        composable(Screen.Home.route) {
+            HomeScreen(navController)
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = { navController.navigate(Screen.Profile.route) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Mi perfil")
+        composable(Screen.List.route) {
+            ListScreen(navController)
+        }
+        composable(Screen.Profile.route) {
+            ProfileScreen(navController)
+        }
+        composable(
+            route = Screen.Detail.route,
+            arguments = listOf(
+                navArgument("itemId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                }
+            )
+        ) { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getInt("itemId") ?: 0
+            DetailScreen(navController, itemId)
         }
     }
 }
