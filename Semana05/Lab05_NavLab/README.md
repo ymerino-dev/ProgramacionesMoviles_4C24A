@@ -13,18 +13,18 @@ Implementación de un sistema de navegación entre múltiples pantallas utilizan
 
 ### 1. Historial de Commits (Git)
 <div align="center">
-  <img src="img/commits.png" width="600" alt="Historial de Commits">
+  <img src="img/commits.jpeg" width="600" alt="Historial de Commits">
 </div>
 
 ### 2. Resultados de la Aplicación (Emulador)
 
-| Pantalla de Inicio | Pantalla de Lista |
-| :---: | :---: |
-| <img src="img/cap_inicioPrincipal.png" width="300" alt="Home"> | <img src="img/cap_lista.png" width="300" alt="Lista"> |
+|                       Pantalla de Inicio                        |                   Pantalla de Lista                    |
+|:---------------------------------------------------------------:|:------------------------------------------------------:|
+| <img src="img/cap_inicioPrincipal.jpeg" width="300" alt="Home"> | <img src="img/cap_lista.jpeg" width="300" alt="Lista"> |
 
-| Pantalla de Perfil | Pantalla de Detalle |
-| :---: | :---: |
-| <img src="img/cap_perfil.png" width="300" alt="Perfil"> | <img src="img/cap_detalleElemento.png" width="300" alt="Detalle"> |
+|                    Pantalla de Perfil                    |                        Pantalla de Detalle                         |
+|:--------------------------------------------------------:|:------------------------------------------------------------------:|
+| <img src="img/cap_perfil.jpeg" width="300" alt="Perfil"> | <img src="img/cap_detalleElemento.jpeg" width="300" alt="Detalle"> |
 
 ---
 
