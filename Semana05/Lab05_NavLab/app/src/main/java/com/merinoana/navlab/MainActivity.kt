@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Esto llama a tu archivo AppNavigation.kt
+           
             AppNavigation()
         }
     }
