@@ -1,17 +1,19 @@
 package com.merinoana.clinicasalud.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.launch
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,34 +74,37 @@ fun MainScreen(navController: NavHostController) {
                 )
             }
         ) { innerPadding ->
-            // Reemplaza el Box con el NavHost
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Inicio.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Inicio.route) { InicioScreen(navController) }
 
-
-                    NavHost(
-                        navController = navController,
-                        startDestination = Screen.Inicio.route,
-                        modifier = Modifier.padding(innerPadding) // Padding obligatorio del Scaffold
-                    ) {
-                        composable(Screen.Inicio.route) { InicioScreen(navController) }
-                        composable(Screen.MisCitas.route) { Text("Pantalla de Mis Citas", modifier = Modifier.padding(16.dp)) }
-                        composable(Screen.Historial.route) { Text("Pantalla de Historial", modifier = Modifier.padding(16.dp)) }
-
-                        // Rutas con extracción de parámetros
-                        composable(Screen.Perfil.route) { backStackEntry ->
-                            val medico = backStackEntry.arguments?.getString("medico")
-                            PerfilScreen(navController, medico)
-                        }
-                        composable(Screen.Agendar.route) { backStackEntry ->
-                            val medico = backStackEntry.arguments?.getString("medico")
-                            AgendarScreen(navController, medico)
-                        }
-                        composable(Screen.Confirmacion.route) { backStackEntry ->
-                            val medico = backStackEntry.arguments?.getString("medico")
-                            val fecha = backStackEntry.arguments?.getString("fecha")
-                            val hora = backStackEntry.arguments?.getString("hora")
-                            ConfirmacionScreen(navController, medico, fecha, hora)
-                        }
+                // Conectando la pantalla MisCitasScreen y el diseño vacío de Historial
+                composable(Screen.MisCitas.route) { MisCitasScreen() }
+                composable(Screen.Historial.route) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("No hay historial médico disponible.", style = MaterialTheme.typography.bodyLarge)
                     }
+                }
+
+                // Rutas con extracción de parámetros
+                composable(Screen.Perfil.route) { backStackEntry ->
+                    val medico = backStackEntry.arguments?.getString("medico")
+                    PerfilScreen(navController, medico)
+                }
+                composable(Screen.Agendar.route) { backStackEntry ->
+                    val medico = backStackEntry.arguments?.getString("medico")
+                    AgendarScreen(navController, medico)
+                }
+                composable(Screen.Confirmacion.route) { backStackEntry ->
+                    val medico = backStackEntry.arguments?.getString("medico")
+                    val fecha = backStackEntry.arguments?.getString("fecha")
+                    val hora = backStackEntry.arguments?.getString("hora")
+                    ConfirmacionScreen(navController, medico, fecha, hora)
+                }
+            }
         }
     }
 }
