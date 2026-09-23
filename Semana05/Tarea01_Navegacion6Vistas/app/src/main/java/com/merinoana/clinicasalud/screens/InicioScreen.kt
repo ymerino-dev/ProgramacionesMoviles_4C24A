@@ -29,7 +29,7 @@ fun InicioScreen(navController: NavController) {
     )
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Hola, Juan", style = MaterialTheme.typography.titleLarge)
+        Text("Hola, Ana Yanira Merino Ramos", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
         // LazyRow para chips de especialidad

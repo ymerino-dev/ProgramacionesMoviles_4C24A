@@ -46,14 +46,14 @@ fun ConfirmacionScreen(navController: NavController, medico: String?, fecha: Str
 
         Button(
             onClick = {
-                // Regresa al inicio y limpia el historial de pantallas para no volver a la confirmación con el botón "Atrás"
-                navController.navigate(Screen.Inicio.route) {
-                    popUpTo(Screen.Inicio.route) { inclusive = true }
+                // Navega a Mis Citas y limpia la pantalla de confirmación del historial
+                navController.navigate(Screen.MisCitas.route) {
+                    popUpTo(Screen.Inicio.route) { inclusive = false }
                 }
             },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text("Volver al inicio")
+            Text("Ver mis citas")
         }
     }
 }
