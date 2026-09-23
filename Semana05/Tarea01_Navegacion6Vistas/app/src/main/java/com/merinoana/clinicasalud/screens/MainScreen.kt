@@ -1,14 +1,18 @@
 package com.merinoana.clinicasalud.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,15 +30,46 @@ fun MainScreen(navController: NavHostController) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(
-                    text = "Clínica Salud+",
+                // CABECERA DEL DRAWER (Perfil del usuario)
+                Row(
                     modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                HorizontalDivider()
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "AM", // Iniciales de Ana Merino
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Ana Yanira Merino Ramos",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Paciente",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+
+                // OPCIONES DEL MENÚ CON ICONOS CIRCULARES
                 NavigationDrawerItem(
                     label = { Text("Inicio") },
                     selected = currentRoute == Screen.Inicio.route,
+                    icon = { Icon(if (currentRoute == Screen.Inicio.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
                     onClick = {
                         currentRoute = Screen.Inicio.route
                         navController.navigate(Screen.Inicio.route)
@@ -44,6 +79,7 @@ fun MainScreen(navController: NavHostController) {
                 NavigationDrawerItem(
                     label = { Text("Mis citas") },
                     selected = currentRoute == Screen.MisCitas.route,
+                    icon = { Icon(if (currentRoute == Screen.MisCitas.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
                     onClick = {
                         currentRoute = Screen.MisCitas.route
                         navController.navigate(Screen.MisCitas.route)
@@ -53,9 +89,20 @@ fun MainScreen(navController: NavHostController) {
                 NavigationDrawerItem(
                     label = { Text("Historial médico") },
                     selected = currentRoute == Screen.Historial.route,
+                    icon = { Icon(if (currentRoute == Screen.Historial.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
                     onClick = {
                         currentRoute = Screen.Historial.route
                         navController.navigate(Screen.Historial.route)
+                        scope.launch { drawerState.close() }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Perfil") },
+                    selected = currentRoute == Screen.MiPerfil.route,
+                    icon = { Icon(if (currentRoute == Screen.MiPerfil.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
+                    onClick = {
+                        currentRoute = Screen.MiPerfil.route
+                        navController.navigate(Screen.MiPerfil.route)
                         scope.launch { drawerState.close() }
                     }
                 )
@@ -80,16 +127,23 @@ fun MainScreen(navController: NavHostController) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Inicio.route) { InicioScreen(navController) }
-
-                // Conectando la pantalla MisCitasScreen y el diseño vacío de Historial
                 composable(Screen.MisCitas.route) { MisCitasScreen() }
+
+                // Pantalla temporal para Historial Médico
                 composable(Screen.Historial.route) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("No hay historial médico disponible.", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
 
-                // Rutas con extracción de parámetros
+                // Pantalla temporal para Mi Perfil (Paciente)
+                composable(Screen.MiPerfil.route) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Perfil de Ana Yanira Merino Ramos", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+
+                // Rutas con extracción de parámetros (Flujo de reserva)
                 composable(Screen.Perfil.route) { backStackEntry ->
                     val medico = backStackEntry.arguments?.getString("medico")
                     PerfilScreen(navController, medico)
