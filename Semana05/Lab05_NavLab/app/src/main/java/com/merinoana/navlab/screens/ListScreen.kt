@@ -3,7 +3,8 @@ package com.merinoana.navlab.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -11,45 +12,48 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.merinoana.navlab.navigation.Screen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(navController: NavController) {
-    // Lista simulada de datos
-    val items = listOf(
-        "Elemento 1" to 1,
-        "Elemento 2" to 2,
-        "Elemento 3" to 3,
-        "Elemento 4" to 4,
-        "Elemento 5" to 5
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Lista de Elementos",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyColumn {
-            items(items) { (name, id) ->
-                Card(
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Lista") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Creamos 15 elementos de ejemplo
+            items(15) { index ->
+                val numero = index + 1
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
                         .clickable {
-                            // Navega a Detail pasando el ID
-                            navController.navigate(Screen.Detail.createRoute(id))
+                            navController.navigate(Screen.Detail.createRoute(numero))
                         }
+                        .padding(16.dp)
                 ) {
                     Text(
-                        text = name,
-                        modifier = Modifier.padding(16.dp),
+                        text = "Elemento número $numero",
                         style = MaterialTheme.typography.bodyLarge
                     )
+                    Text(
+                        text = "Toca para ver el detalle",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
+                Divider(color = MaterialTheme.colorScheme.surfaceVariant)
             }
         }
     }
