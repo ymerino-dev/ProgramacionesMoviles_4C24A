@@ -3,6 +3,7 @@ package com.merinoana.clinicasalud.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RadioButtonChecked
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -31,98 +33,111 @@ fun MainScreen(navController: NavHostController) {
             Triple("Dr. Luis Vega", "Vie 20 - 10:30 am", "Completada")
         )
     }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                modifier = Modifier.width(300.dp),
+                drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+            ) {
                 // CABECERA DEL DRAWER (Perfil del usuario)
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(24.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(56.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "AM", // Iniciales de Ana Merino
+                            text = "AM",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Ana Yanira Merino Ramos",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Paciente",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Ana Yanira Merino Ramos",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Paciente • Clínica Salud+",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
                 }
-                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
 
-                // OPCIONES DEL MENÚ CON ICONOS CIRCULARES
-                NavigationDrawerItem(
-                    label = { Text("Inicio") },
-                    selected = currentRoute == Screen.Inicio.route,
-                    icon = { Icon(if (currentRoute == Screen.Inicio.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
-                    onClick = {
-                        currentRoute = Screen.Inicio.route
-                        navController.navigate(Screen.Inicio.route)
-                        scope.launch { drawerState.close() }
-                    }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // OPCIONES DEL MENÚ CON 12% OPACITY PARA EL SELECCIONADO Y TEXTO EN NEGRITA
+                val itemsMenu = listOf(
+                    Pair("Inicio", Screen.Inicio.route),
+                    Pair("Mis citas", Screen.MisCitas.route),
+                    Pair("Historial médico", Screen.Historial.route),
+                    Pair("Perfil", Screen.MiPerfil.route)
                 )
-                NavigationDrawerItem(
-                    label = { Text("Mis citas") },
-                    selected = currentRoute == Screen.MisCitas.route,
-                    icon = { Icon(if (currentRoute == Screen.MisCitas.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
-                    onClick = {
-                        currentRoute = Screen.MisCitas.route
-                        navController.navigate(Screen.MisCitas.route)
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Historial médico") },
-                    selected = currentRoute == Screen.Historial.route,
-                    icon = { Icon(if (currentRoute == Screen.Historial.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
-                    onClick = {
-                        currentRoute = Screen.Historial.route
-                        navController.navigate(Screen.Historial.route)
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Perfil") },
-                    selected = currentRoute == Screen.MiPerfil.route,
-                    icon = { Icon(if (currentRoute == Screen.MiPerfil.route) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked, contentDescription = null) },
-                    onClick = {
-                        currentRoute = Screen.MiPerfil.route
-                        navController.navigate(Screen.MiPerfil.route)
-                        scope.launch { drawerState.close() }
-                    }
-                )
+
+                itemsMenu.forEach { (label, route) ->
+                    val isSelected = currentRoute == route
+                    NavigationDrawerItem(
+                        label = {
+                            Text(
+                                text = label,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        selected = isSelected,
+                        icon = {
+                            Icon(
+                                imageVector = if (isSelected) Icons.Filled.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            unselectedContainerColor = Color.Transparent
+                        ),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        onClick = {
+                            currentRoute = route
+                            navController.navigate(route)
+                            scope.launch { drawerState.close() }
+                        }
+                    )
+                }
             }
         }
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Clínica Salud+") },
+                    title = {
+                        Text(
+                            text = "Clínica Salud+",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
+                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú", tint = MaterialTheme.colorScheme.primary)
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
             }
         ) { innerPadding ->
@@ -149,7 +164,7 @@ fun MainScreen(navController: NavHostController) {
                     val fecha = backStackEntry.arguments?.getString("fecha")
                     val hora = backStackEntry.arguments?.getString("hora")
                     ConfirmacionScreen(navController, medico, fecha, hora) { nuevaCita ->
-                        citasGlobales.add(0, nuevaCita) // Añade la nueva cita arriba en la lista
+                        citasGlobales.add(0, nuevaCita)
                     }
                 }
             }
