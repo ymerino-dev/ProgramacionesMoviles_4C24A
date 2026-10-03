@@ -27,6 +27,7 @@ fun AppDrawer(
             Column(
                 verticalArrangement = Arrangement.Center
             ) {
+                // En la sección del Box del encabezado dentro de AppDrawer.kt:
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.primary,
@@ -34,7 +35,7 @@ fun AppDrawer(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = "MR",
+                            text = "AM", // Tus iniciales Ana Merino
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -42,12 +43,12 @@ fun AppDrawer(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Maria Rojas",
+                    text = "Ana Yanira Merino Ramos",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "maria@tecsup.edu.pe",
+                    text = "ana.merino@tecsup.edu.pe",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
