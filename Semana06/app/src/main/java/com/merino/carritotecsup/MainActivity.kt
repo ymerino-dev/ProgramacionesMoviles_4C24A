@@ -1,5 +1,6 @@
 package com.merino.carritotecsup
 
+import androidx.compose.foundation.lazy.items
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -94,7 +95,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
+
 @Composable
 fun PantallaPedidosTemporal() {
     Box(
@@ -181,7 +182,7 @@ fun PantallaFavoritos(favoritos: List<Producto>, onEliminarFavorito: (Producto) 
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(favoritos) { prod ->
+                items(favoritos){ prod ->
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
