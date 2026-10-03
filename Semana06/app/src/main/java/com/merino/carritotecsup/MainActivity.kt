@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.merino.carritotecsup.ui.theme.Lab04CarritoTheme
 import kotlinx.coroutines.launch
@@ -64,11 +65,45 @@ class MainActivity : ComponentActivity() {
                         }
                     ) { innerPadding ->
                         Box(modifier = Modifier.padding(innerPadding)) {
-                            PantallaCarrito()
+                            when (currentRoute) {
+                                "inicio" -> PantallaCarrito()
+                                "pedidos" -> PantallaPedidosTemporal() // O una vista temporal
+                                "favoritos" -> PantallaFavoritosTemporal()
+                                "perfil" -> PantallaPerfilTemporal()
+                        }
                         }
                     }
                 }
             }
         }
+    }
+}
+@Composable
+fun PantallaPedidosTemporal() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Sección: Mis Pedidos", style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+@Composable
+fun PantallaFavoritosTemporal() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Sección: Favoritos", style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+@Composable
+fun PantallaPerfilTemporal() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Sección: Perfil", style = MaterialTheme.typography.titleLarge)
     }
 }
