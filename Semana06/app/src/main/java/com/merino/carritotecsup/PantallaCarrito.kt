@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,222 +15,186 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaCarrito() {
-    var nombre by remember { mutableStateOf("") }
-    var precio by remember { mutableStateOf("") }
-    var cantidad by remember { mutableStateOf("") }
+fun PantallaCarrito(
+    carritoProductos: MutableList<Producto>,
+    onNavigateBack: () -> Unit,
+    onProceedToCheckout: () -> Unit
+) {
+    // Cálculos matemáticos reactivos
+    val subtotal = carritoProductos.sumOf { it.precio * it.cantidad }
+    val costoEnvio = if (carritoProductos.isEmpty()) 0.0 else 5.00
+    val totalGeneral = subtotal + costoEnvio
 
-    val productos = remember { mutableStateListOf<Producto>() }
-
-    // --- CAMBIO PARA EL COMMIT 5: Totales y Estado Vacío ---
-    val subtotal = productos.sumOf { it.precio * it.cantidad }
-    val igv = subtotal * 0.18
-    val total = subtotal + igv
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Formulario
-        OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre del producto") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = precio,
-                onValueChange = { precio = it },
-                label = { Text("Precio") },
-                modifier = Modifier.weight(1f)
-            )
-            OutlinedTextField(
-                value = cantidad,
-                onValueChange = { cantidad = it },
-                label = { Text("Cantidad") },
-                modifier = Modifier.weight(1f)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Carrito de Compras") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             )
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                val precioNum = precio.toDoubleOrNull() ?: 0.0
-                val cantidadNum = cantidad.toIntOrNull() ?: 0
-                if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
-                    productos.add(Producto(nombre, precioNum, cantidadNum))
-                    nombre = ""
-                    precio = ""
-                    cantidad = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("AGREGAR")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // --- CAMBIO PARA EL COMMIT 5: Estado Vacío vs LazyColumn ---
-        if (productos.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Tu carrito está vacío", color = Color.Gray)
-                    Text("Agrega productos con el formulario de arriba", color = Color.Gray)
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(productos) { producto ->
-                    TarjetaProducto(
-                        producto = producto,
-                        onEliminar = { productos.remove(producto) }
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // --- CAMBIO PARA EL COMMIT 5: Panel de Totales Fijo ---
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Productos: ${productos.size}", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            if (carritoProductos.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Subtotal:")
-                    Text("S/ ${String.format("%.2f", subtotal)}")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("Tu carrito está vacío", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+                        Text("Agrega productos desde la pantalla de inicio", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("IGV (18%):")
-                    Text("S/ ${String.format("%.2f", igv)}")
-                }
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("TOTAL:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    Text("S/ ${String.format("%.2f", total)}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    items(carritoProductos) { producto ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = producto.nombre,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "S/ ${String.format("%.2f", producto.precio)} c/u",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Gray
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Subtotal: S/ ${String.format("%.2f", producto.precio * producto.cantidad)}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                // Controles de cantidad por item
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(
+                                        onClick = {
+                                            if (producto.cantidad > 1) {
+                                                producto.cantidad--
+                                            } else {
+                                                carritoProductos.remove(producto)
+                                            }
+                                        },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Text("-", fontWeight = FontWeight.Bold)
+                                    }
+
+                                    Text(
+                                        text = producto.cantidad.toString(),
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    IconButton(
+                                        onClick = { producto.cantidad++ },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Text("+", fontWeight = FontWeight.Bold)
+                                    }
+
+                                    IconButton(
+                                        onClick = { carritoProductos.remove(producto) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
-    // Estado para controlar si el DropdownMenu está abierto o cerrado
-    var expanded by remember { mutableStateOf(false) }
+            Spacer(modifier = Modifier.height(16.dp))
 
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            // Panel de Resumen de Totales y Delivery
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = producto.nombre,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "S/ ${producto.precio} x ${producto.cantidad}",
-                        color = Color.Gray
-                    )
-                }
-
-                // 1. Botón de tres puntos que activa el menú contextual
-                IconButton(onClick = { expanded = true }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Menú contextual"
-                    )
-                }
-
-                // Botón de eliminar que ya tenías
-                IconButton(onClick = onEliminar) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Subtotal de productos:")
+                        Text("S/ ${String.format("%.2f", subtotal)}")
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Costo de envío (Delivery):")
+                        Text("S/ ${String.format("%.2f", costoEnvio)}")
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("TOTAL A PAGAR:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("S/ ${String.format("%.2f", totalGeneral)}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
 
-            // 2. DropdownMenu con las opciones requeridas por el laboratorio
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.align(Alignment.TopEnd)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onProceedToCheckout,
+                enabled = carritoProductos.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                DropdownMenuItem(
-                    text = { Text("Favoritos") },
-                    onClick = {
-                        expanded = false
-                        // Aquí puedes programar la lógica de favoritos más adelante
-                    },
-                    leadingIcon = {
-                        Icon(Icons.Default.Favorite, contentDescription = null)
-                    }
-                )
-
-                HorizontalDivider()
-
-                DropdownMenuItem(
-                    text = { Text("Compartir") },
-                    onClick = {
-                        expanded = false
-                    },
-                    leadingIcon = {
-                        Icon(Icons.Default.Share, contentDescription = null)
-                    }
-                )
-
-                HorizontalDivider()
-
-                DropdownMenuItem(
-                    text = { Text("Reportar") },
-                    onClick = {
-                        expanded = false
-                    },
-                    leadingIcon = {
-                        Icon(Icons.Default.Warning, contentDescription = null)
-                    }
-                )
+                Text("PROCEDER AL PAGO")
             }
         }
     }

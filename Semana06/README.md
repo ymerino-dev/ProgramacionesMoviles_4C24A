@@ -1,7 +1,6 @@
-cat << 'EOF' > README.md
-# 🛒 Mi Bodega / TECSUP Store - Lab 06
+# 🛒 Mi Bodega / TECSUP Store - Lab 06 & Fase 2 (IA)
 
-Aplicación móvil desarrollada en **Android Studio** utilizando **Jetpack Compose**, orientada a la gestión de un carrito de compras interactivo con menús contextuales y navegación estructurada por cajón lateral (`NavigationDrawer`).
+Aplicación móvil desarrollada en **Android Studio** utilizando **Jetpack Compose**, orientada a la gestión de un carrito de compras interactivo con 7 pantallas, navegación avanzada con paso de parámetros y `popUpTo`, y filtrado combinado en tiempo real.
 
 ---
 
@@ -13,42 +12,33 @@ Aplicación móvil desarrollada en **Android Studio** utilizando **Jetpack Compo
 
 ---
 
-## 🚀 Características Principales (Fase 1 - Sin IA)
+## 🔐 Credenciales de Acceso (Login)
+Para ingresar a la aplicación en la **PantallaLogin.kt**, puedes utilizar las siguientes credenciales de prueba:
+* **Usuario / Correo:** `ana.merino@tecsup.edu.pe` *(o cualquier texto no vacío)*
+* **Contraseña:** `tecsup2026` *(o cualquier texto no vacío)*
 
-1. **Gestión de Productos:**
-    * Formulario interactivo para agregar productos con nombre, precio y cantidad.
-    * Cálculo dinámico de subtotal, IGV (18%) y total general.
-    * Estado vacío interactivo cuando el carrito no tiene elementos.
-2. **Menú Contextual por Tarjeta (`DropdownMenu`):**
-    * Botón de 3 puntos en cada tarjeta de producto.
-    * Opciones personalizadas con iconos y divisores (*Favoritos*, *Compartir*, *Reportar*).
-3. **Navegación Lateral (`NavigationDrawer`):**
-    * Cajón lateral deslizante (`ModalDrawerSheet`) con encabezado personalizado del usuario (Iniciales, Nombre y Correo).
-    * Destinos funcionales: *Inicio*, *Mis pedidos*, *Favoritos*, *Perfil* y *Cerrar sesión*.
-    * Indicador visual de elemento activo.
-4. **Vistas Especializadas:**
-    * **Pantalla de Perfil:** Vista dedicada con información institucional y datos reales del estudiante.
-    * **Pantalla de Favoritos:** Listado reactivo de elementos guardados desde el menú contextual.
+---
+
+## 📱 Alcance de las 7 Pantallas e Implementación
+1. **PantallaLogin.kt:** Acceso inicial con validación y botones para registro o entrada directa.
+2. **PantallaCrearCuenta.kt:** Formulario completo con datos del cliente (Nombre, teléfono, dirección, referencia).
+3. **PantallaInicio.kt:** Vista principal con barra superior, **buscador en tiempo real con filtro combinado**, `LazyRow` de categorías y `LazyColumn` de productos destacados.
+4. **PantallaDetalleProducto.kt:** Vista ampliada del producto seleccionado (recibiendo `productoId` por ruta), control de cantidad y botón "Agregar al carrito".
+5. **PantallaCarrito.kt:** Listado de productos agregados, control de cantidades por ítem, subtotal, costo de envío y cálculo reactivo del total general.
+6. **PantallaDatosEntrega.kt:** Formulario de envío y selección de método de pago (Efectivo, Yape, Plin) con confirmación y limpieza de pila (`popUpTo`).
+7. **PantallaConfirmacion.kt:** Pantalla de éxito con número de pedido simulado (`#1024`), resumen y botón para volver al inicio.
+
+---
+
+## 🚀 Requerimiento Especial Fase 2 (Filtrado Combinado en Tiempo Real)
+En `PantallaInicio.kt`, se implementó un sistema de **filtrado simultáneo**:
+* El campo de búsqueda filtra dinámicamente por nombre o descripción mientras el usuario escribe.
+* Se combina de forma simultánea con el filtro de categorías de la `LazyRow` (ej. seleccionar "Bebidas" y buscar "1.5L"), mostrando únicamente los productos que cumplen ambas condiciones a la vez sin que un filtro anule al otro.
 
 ---
 
 ## 🛠️ Tecnologías y Componentes Utilizados
 * **Lenguaje:** Kotlin
 * **UI Toolkit:** Jetpack Compose (Material Design 3)
-* **Control de Versiones:** Git y GitHub
-* **Arquitectura de UI:** Componentes reactivos (`remember`, `mutableStateListOf`, `LazyColumn`).
-
----
-
-## 🤔 Preguntas de Reflexión (Fase 1)
-
-1. **¿Qué ventajas ofrece `ModalNavigationDrawer` frente a una navegación tradicional por pestañas o pantallas independientes en Jetpack Compose?**
-    * Permite centralizar la navegación global de la aplicación de manera fluida y limpia, optimizando el espacio visual en pantallas móviles y manteniendo la consistencia de la identidad de usuario en todo el ciclo de vida de la app.
-
-2. **¿Por qué es fundamental el uso de estados reactivos (`mutableStateListOf`, `remember`) al sincronizar el menú contextual (`DropdownMenu`) con la pantalla de Favoritos?**
-    * Garantiza que la interfaz se recomponga de forma automática e inmediata cada vez que el usuario agregue o elimine un elemento, manteniendo la fuente de la verdad sincronizada en tiempo real sin necesidad de recargar la actividad.
-
-3. **¿Cómo influye una correcta estructuración de ramas y commits en Git para el desarrollo de proyectos móviles colaborativos?**
-    * Facilita el rastreo de errores, permite aislar nuevas características (como la transición a la Fase 2 con IA) y asegura un historial de cambios limpio y profesional alineado con las buenas prácticas de la industria.
-
-
+* **Navegación:** Jetpack Navigation Compose (NavHost, NavType, arguments, popUpTo)
+* **Arquitectura de UI:** Componentes reactivos (`remember`, `mutableStateListOf`, `LazyColumn`, `LazyRow`).
