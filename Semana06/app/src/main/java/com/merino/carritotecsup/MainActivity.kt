@@ -7,12 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -37,6 +39,7 @@ class MainActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 var currentRoute by remember { mutableStateOf("inicio") }
+                val listaFavoritos = remember { mutableStateListOf<Producto>() }
 
                 // 1. Envolvemos todo el diseño con el ModalNavigationDrawer
                 ModalNavigationDrawer(
@@ -77,9 +80,13 @@ class MainActivity : ComponentActivity() {
                         Box(modifier = Modifier.padding(innerPadding)) {
                             when (currentRoute) {
                                 "inicio" -> PantallaCarrito()
-                                "pedidos" -> PantallaPedidosTemporal() // O una vista temporal
-                                "favoritos" -> PantallaFavoritosTemporal()
-                                "perfil" -> PantallaPerfilTemporal()
+                                "pedidos" -> PantallaPedidosTemporal() // O una vista temporal si deseas dejarla así
+                                "favoritos" -> PantallaFavoritos(
+                                    favoritos = listaFavoritos,
+                                    onEliminarFavorito = { producto -> listaFavoritos.remove(producto) }
+                                )
+                                "perfil" -> PantallaPerfil() // <--- ¡Aquí llamamos a tu pantalla real de Perfil!
+                            }
                         }
                         }
                     }
@@ -158,6 +165,32 @@ fun PantallaPerfil() {
                 Text("Curso: Programación en Móvileles", fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Ciclo: 4to Ciclo - TECSUP", color = Color.Gray)
+            }
+        }
+    }
+}
+@Composable
+fun PantallaFavoritos(favoritos: List<Producto>, onEliminarFavorito: (Producto) -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Productos Favoritos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (favoritos.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No tienes productos marcados como favoritos", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(favoritos) { prod ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(prod.nombre, fontWeight = FontWeight.Bold)
+                                Text("S/ ${prod.precio}", color = Color.Gray)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
