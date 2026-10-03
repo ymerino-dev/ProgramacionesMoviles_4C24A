@@ -40,3 +40,15 @@ Aplicación móvil desarrollada en **Android Studio** utilizando **Jetpack Compo
 
 ---
 
+## 🤔 Preguntas de Reflexión (Fase 1)
+
+1. **¿Qué ventajas ofrece `ModalNavigationDrawer` frente a una navegación tradicional por pestañas o pantallas independientes en Jetpack Compose?**
+    * Permite centralizar la navegación global de la aplicación de manera fluida y limpia, optimizando el espacio visual en pantallas móviles y manteniendo la consistencia de la identidad de usuario en todo el ciclo de vida de la app.
+
+2. **¿Por qué es fundamental el uso de estados reactivos (`mutableStateListOf`, `remember`) al sincronizar el menú contextual (`DropdownMenu`) con la pantalla de Favoritos?**
+    * Garantiza que la interfaz se recomponga de forma automática e inmediata cada vez que el usuario agregue o elimine un elemento, manteniendo la fuente de la verdad sincronizada en tiempo real sin necesidad de recargar la actividad.
+
+3. **¿Cómo influye una correcta estructuración de ramas y commits en Git para el desarrollo de proyectos móviles colaborativos?**
+    * Facilita el rastreo de errores, permite aislar nuevas características (como la transición a la Fase 2 con IA) y asegura un historial de cambios limpio y profesional alineado con las buenas prácticas de la industria.
+
+
