@@ -5,6 +5,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -148,32 +152,86 @@ fun PantallaCarrito() {
 
 @Composable
 fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
+    // Estado para controlar si el DropdownMenu está abierto o cerrado
+    var expanded by remember { mutableStateOf(false) }
+
     Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "S/ ${producto.precio} x ${producto.cantidad}",
-                    color = Color.Gray
-                )
-                Text(
-                    text = "Importe: S/ ${String.format("%.2f", producto.precio * producto.cantidad)}"
-                )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "S/ ${producto.precio} x ${producto.cantidad}",
+                        color = Color.Gray
+                    )
+                }
+
+                // 1. Botón de tres puntos que activa el menú contextual
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Menú contextual"
+                    )
+                }
+
+                // Botón de eliminar que ya tenías
+                IconButton(onClick = onEliminar) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
-            IconButton(onClick = onEliminar) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar",
-                    tint = MaterialTheme.colorScheme.error
+
+            // 2. DropdownMenu con las opciones requeridas por el laboratorio
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Favoritos") },
+                    onClick = {
+                        expanded = false
+                        // Aquí puedes programar la lógica de favoritos más adelante
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Default.Favorite, contentDescription = null)
+                    }
+                )
+
+                HorizontalDivider()
+
+                DropdownMenuItem(
+                    text = { Text("Compartir") },
+                    onClick = {
+                        expanded = false
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Default.Share, contentDescription = null)
+                    }
+                )
+
+                HorizontalDivider()
+
+                DropdownMenuItem(
+                    text = { Text("Reportar") },
+                    onClick = {
+                        expanded = false
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Default.Warning, contentDescription = null)
+                    }
                 )
             }
         }
