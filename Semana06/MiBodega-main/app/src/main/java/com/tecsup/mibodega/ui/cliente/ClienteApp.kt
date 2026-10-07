@@ -34,6 +34,9 @@ private object Rutas {
     const val DETALLE = "detalle/{productoId}"
     const val CARRITO = "carrito"
 
+    const val ENTREGA = "entrega"
+    const val CONFIRMACION = "confirmacion"
+
     fun detalle(productoId: Int) = "detalle/$productoId"
 }
 
@@ -119,7 +122,9 @@ fun ClienteApp() {
                 onEliminar = { producto ->
                     carrito = carrito.filterNot { it.producto.id == producto.id }
                 },
-                onContinuarPedido = { /* TODO: navegar a DatosEntregaScreen */ }
+                onContinuarPedido = { /* TODO: navegar a DatosEntregaScreen */
+                    navController.navigate(Rutas.ENTREGA)
+                }
             )
         }
     }
