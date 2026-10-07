@@ -20,6 +20,12 @@ fun PantallaLogin(
     var usuario by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    var isUsuarioError by remember { mutableStateOf(false) }
+    var isPasswordError by remember { mutableStateOf(false) }
+
+    // Usuario y contraseña fijos de prueba
+    val usuarioValido = "admin@tecsup.edu.pe"
+    val passwordValida = "123456"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -62,25 +68,35 @@ fun PantallaLogin(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = usuario,
-                onValueChange = { usuario = it },
+                onValueChange = {
+                    usuario = it
+                    isUsuarioError = false
+                    errorMessage = ""
+                },
                 label = { Text("Correo o Usuario") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                isError = isUsuarioError,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    isPasswordError = false
+                    errorMessage = ""
+                },
                 label = { Text("Contraseña") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 visualTransformation = PasswordVisualTransformation(),
+                isError = isPasswordError,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -90,18 +106,44 @@ fun PantallaLogin(
                 Text(
                     text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Demostración: admin@tecsup.edu.pe / 123456",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    if (usuario.isNotBlank() && password.isNotBlank()) {
+                    val usuarioTrim = usuario.trim()
+                    val passwordTrim = password.trim()
+
+                    if (usuarioTrim.isBlank()) {
+                        isUsuarioError = true
+                        errorMessage = "El usuario no puede estar vacío"
+                        return@Button
+                    }
+
+                    if (passwordTrim.isBlank()) {
+                        isPasswordError = true
+                        errorMessage = "La contraseña no puede estar vacía"
+                        return@Button
+                    }
+
+                    if (usuarioTrim == usuarioValido && passwordTrim == passwordValida) {
                         onNavigateToInicio()
                     } else {
-                        errorMessage = "Por favor ingresa usuario y contraseña"
+                        isUsuarioError = true
+                        isPasswordError = true
+                        errorMessage = "Usuario o contraseña incorrectos. Usa admin@tecsup.edu.pe / 123456"
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
