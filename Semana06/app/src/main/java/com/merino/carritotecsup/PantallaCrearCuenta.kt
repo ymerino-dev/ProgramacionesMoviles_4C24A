@@ -22,6 +22,10 @@ fun PantallaCrearCuenta(
     var telefono by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
+
+    var isNombreError by remember { mutableStateOf(false) }
+    var isTelefonoError by remember { mutableStateOf(false) }
+    var isDireccionError by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
 
     Scaffold(
@@ -65,8 +69,13 @@ fun PantallaCrearCuenta(
 
             OutlinedTextField(
                 value = nombre,
-                onValueChange = { nombre = it },
-                label = { Text("Nombre Completo") },
+                onValueChange = {
+                    nombre = it
+                    isNombreError = false
+                    mensajeError = ""
+                },
+                label = { Text("Nombre Completo *") },
+                isError = isNombreError,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -75,8 +84,13 @@ fun PantallaCrearCuenta(
 
             OutlinedTextField(
                 value = telefono,
-                onValueChange = { telefono = it },
-                label = { Text("Teléfono / Celular") },
+                onValueChange = {
+                    telefono = it
+                    isTelefonoError = false
+                    mensajeError = ""
+                },
+                label = { Text("Teléfono / Celular *") },
+                isError = isTelefonoError,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -85,8 +99,13 @@ fun PantallaCrearCuenta(
 
             OutlinedTextField(
                 value = direccion,
-                onValueChange = { direccion = it },
-                label = { Text("Dirección de Entrega") },
+                onValueChange = {
+                    direccion = it
+                    isDireccionError = false
+                    mensajeError = ""
+                },
+                label = { Text("Dirección de Entrega *") },
+                isError = isDireccionError,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -103,17 +122,30 @@ fun PantallaCrearCuenta(
 
             if (mensajeError.isNotBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(text = mensajeError, color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = mensajeError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    if (nombre.isNotBlank() && telefono.isNotBlank() && direccion.isNotBlank()) {
-                        onRegisterSuccess()
+                    val nBlank = nombre.trim().isBlank()
+                    val tBlank = telefono.trim().isBlank()
+                    val dBlank = direccion.trim().isBlank()
+
+                    isNombreError = nBlank
+                    isTelefonoError = tBlank
+                    isDireccionError = dBlank
+
+                    if (nBlank || tBlank || dBlank) {
+                        mensajeError = "Completa los campos obligatorios (*)"
                     } else {
-                        mensajeError = "Por favor completa Nombre, Teléfono y Dirección"
+                        onRegisterSuccess()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
