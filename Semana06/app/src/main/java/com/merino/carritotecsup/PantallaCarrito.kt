@@ -1,8 +1,10 @@
 package com.merino.carritotecsup
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -11,7 +13,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -22,6 +27,9 @@ fun PantallaCarrito(
     onNavigateBack: () -> Unit,
     onProceedToCheckout: () -> Unit
 ) {
+    // Estado para diálogo de confirmación de eliminación
+    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
+
     // Cálculos matemáticos reactivos
     val subtotal = carritoProductos.sumOf { it.precio * it.cantidad }
     val costoEnvio = if (carritoProductos.isEmpty()) 0.0 else 5.00
@@ -87,6 +95,15 @@ fun PantallaCarrito(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Image(
+                                    painter = painterResource(id = producto.imagenRes),
+                                    contentDescription = producto.nombre,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = producto.nombre,
@@ -114,7 +131,7 @@ fun PantallaCarrito(
                                             if (producto.cantidad > 1) {
                                                 producto.cantidad--
                                             } else {
-                                                carritoProductos.remove(producto)
+                                                productoAEliminar = producto
                                             }
                                         },
                                         modifier = Modifier.size(32.dp)
@@ -136,7 +153,7 @@ fun PantallaCarrito(
                                     }
 
                                     IconButton(
-                                        onClick = { carritoProductos.remove(producto) },
+                                        onClick = { productoAEliminar = producto },
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
@@ -197,5 +214,30 @@ fun PantallaCarrito(
                 Text("PROCEDER AL PAGO")
             }
         }
+    }
+
+    // AlertDialog de confirmación de eliminación
+    productoAEliminar?.let { prod ->
+        AlertDialog(
+            onDismissRequest = { productoAEliminar = null },
+            icon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Eliminar Producto") },
+            text = { Text("¿Estás seguro de que deseas eliminar '${prod.nombre}' de tu carrito de compras?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        carritoProductos.remove(prod)
+                        productoAEliminar = null
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { productoAEliminar = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
