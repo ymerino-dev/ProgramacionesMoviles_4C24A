@@ -6,6 +6,7 @@ data class Producto(
     val precio: Double = 0.0,
     val categoria: String = "General",
     val descripcion: String = "Sin descripción disponible.",
-    val imagenRes: Int = android.R.drawable.ic_menu_gallery,
-    var cantidad: Int = 1
+    val imagenRes: Int = R.drawable.inca_kola,
+    var cantidad: Int = 1,
+    var esFavorito: Boolean = false
 )
