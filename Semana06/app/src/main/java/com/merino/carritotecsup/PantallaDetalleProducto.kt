@@ -1,15 +1,20 @@
 package com.merino.carritotecsup
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -17,21 +22,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PantallaDetalleProducto(
     productoId: Int,
+    listaProductos: List<Producto>,
     onNavigateBack: () -> Unit,
+    onToggleFavorito: (Producto) -> Unit,
     onAgregarAlCarrito: (Producto, Int) -> Unit
 ) {
-    // Catálogo simulado completo para buscar por ID
-    val listaProductos = listOf(
-        Producto(1, "Inca Kola 1.5L", 8.50, "Bebidas", "Gaseosa sabor nacional helada 1.5 litros."),
-        Producto(2, "Coca Cola 1.5L", 8.50, "Bebidas", "Bebida gaseosa refrescante 1.5 litros."),
-        Producto(3, "Arroz Costeño 5kg", 21.90, "Abarrotes", "Arroz superior extra seleccionado grano entero."),
-        Producto(4, "Aceite Primor 1L", 11.20, "Abarrotes", "Aceite vegetal comestible soya y girasol."),
-        Producto(5, "Galletas Soda Field", 3.50, "Snacks", "Paquete de galletas de soda saladas crujientes."),
-        Producto(6, "Papas Lays 200g", 7.00, "Snacks", "Papas fritas crocantes sabor original con sal."),
-        Producto(7, "Detergente Bolívar 1kg", 9.80, "Limpieza", "Detergente en polvo aroma floral lavanda."),
-        Producto(8, "Leche Gloria Azul 400g", 4.70, "Abarrotes", "Leche evaporada entera enriquecida con vitaminas.")
-    )
-
     val producto = listaProductos.find { it.id == productoId } ?: Producto(0, "Producto no encontrado", 0.0, "General", "No disponible")
 
     var cantidad by remember { mutableStateOf(1) }
@@ -43,6 +38,15 @@ fun PantallaDetalleProducto(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onToggleFavorito(producto) }) {
+                        Icon(
+                            imageVector = if (producto.esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorito",
+                            tint = if (producto.esFavorito) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -66,26 +70,42 @@ fun PantallaDetalleProducto(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp)
+                            .height(200.dp)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = producto.categoria.uppercase(),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                        Image(
+                            painter = painterResource(id = producto.imagenRes),
+                            contentDescription = producto.nombre,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentScale = ContentScale.Fit
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { onToggleFavorito(producto) }) {
+                        Icon(
+                            imageVector = if (producto.esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorito",
+                            tint = if (producto.esFavorito) Color.Red else Color.Gray
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

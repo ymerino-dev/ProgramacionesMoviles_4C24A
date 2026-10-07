@@ -3,6 +3,7 @@ package com.merino.carritotecsup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +28,6 @@ fun AppDrawer(
             Column(
                 verticalArrangement = Arrangement.Center
             ) {
-                // En la sección del Box del encabezado dentro de AppDrawer.kt:
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.primary,
@@ -35,7 +35,7 @@ fun AppDrawer(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = "AM", // Tus iniciales Ana Merino
+                            text = "AM",
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -57,7 +57,7 @@ fun AppDrawer(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Destinos de navegación obligatorios
+        // Destinos de navegación
         NavigationDrawerItem(
             icon = { Icon(Icons.Default.Home, contentDescription = null) },
             label = { Text("Inicio") },
@@ -70,7 +70,7 @@ fun AppDrawer(
         )
 
         NavigationDrawerItem(
-            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
+            icon = { Icon(Icons.Default.ShoppingBag, contentDescription = null) },
             label = { Text("Mis pedidos") },
             selected = routeActual == "pedidos",
             onClick = {
@@ -105,10 +105,11 @@ fun AppDrawer(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         NavigationDrawerItem(
-            icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) },
+            icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
             label = { Text("Cerrar sesión") },
             selected = false,
             onClick = {
+                onNavigate("login")
                 onCloseDrawer()
             },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
