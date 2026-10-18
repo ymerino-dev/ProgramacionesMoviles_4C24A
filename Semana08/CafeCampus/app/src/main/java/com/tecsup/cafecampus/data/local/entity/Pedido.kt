@@ -10,8 +10,8 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = Usuario::class,
-            ["id"],
-            ["clientesID"]
+            parentColumns = ["id"],
+            childColumns = ["clienteId"] // <- ¡AQUÍ ESTABA EL ERROR!
         )
     ],
     indices = [Index("clienteId")]

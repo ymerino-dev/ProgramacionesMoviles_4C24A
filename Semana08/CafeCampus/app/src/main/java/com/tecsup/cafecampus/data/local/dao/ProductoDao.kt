@@ -21,11 +21,11 @@ interface ProductoDao {
     suspend fun insertar(p: Producto): Long
 
     @Update
-    suspend fun actualizar(p: Producto)
+    suspend fun actualizar(p: Producto): Int // <-- LA CURA ESTÁ AQUÍ
 
     @Delete
-    suspend fun eliminar(p: Producto)
+    suspend fun eliminar(p: Producto): Int // <-- LA CURA ESTÁ AQUÍ
 
     @Query("UPDATE productos SET disponible = :d WHERE id = :id")
-    suspend fun cambiarDisponibilidad(id: Int, d: Boolean)
+    suspend fun cambiarDisponibilidad(id: Int, d: Boolean): Int // <-- LA CURA ESTÁ AQUÍ
 }
