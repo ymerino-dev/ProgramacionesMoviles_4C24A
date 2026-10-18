@@ -196,11 +196,35 @@ fun NavCafe(
             // --- RUTAS DEL ADMIN ---
             composable(Rutas.AdminPanel.ruta) {
                 val nuevos by pedidosAdminVm.pedidos.collectAsState()
-                PanelScreen(vmPanel = panelAdminVm, nuevosPedidos = nuevos, onPreparar = { id, est -> pedidosAdminVm.avanzar(id, est) }, onVerTodos = { navController.navigate(Rutas.AdminPedidos.ruta) })
+                PanelScreen(
+                    vmPanel = panelAdminVm,
+                    nuevosPedidos = nuevos,
+                    onPreparar = { id, est -> pedidosAdminVm.avanzar(id, est) },
+                    onVerTodos = { navController.navigate(Rutas.AdminPedidos.ruta) },
+                    onVerDetallePedido = { idPedido ->
+                        navController.navigate("admin_detalle_pedido/$idPedido")
+                    }
+                )
             }
 
-            composable(Rutas.AdminPedidos.ruta) { PedidosAdminScreen(vmAdmin = pedidosAdminVm) }
+            composable(Rutas.AdminPedidos.ruta) {
+                PedidosAdminScreen(
+                    vmAdmin = pedidosAdminVm,
+                    onVerDetallePedido = { idPedido ->
+                        navController.navigate("admin_detalle_pedido/$idPedido")
+                    }
+                )
+            }
 
+            // NUEVA RUTA: Detalle individual del pedido para el Administrador
+            composable("admin_detalle_pedido/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType })) { backStack ->
+                val idPedido = backStack.arguments?.getInt("id") ?: 0
+                DetallePedidoAdminScreen(
+                    pedidoId = idPedido,
+                    vmAdmin = pedidosAdminVm,
+                    onVolver = { navController.popBackStack() }
+                )
+            }
             composable(Rutas.AdminMenu.ruta) {
                 MenuAdminScreen(vmAdmin = menuAdminVm, onNuevoProducto = { navController.navigate(Rutas.AdminFormulario.crearRuta(0)) }, onEditarProducto = { id -> navController.navigate(Rutas.AdminFormulario.crearRuta(id)) })
             }
