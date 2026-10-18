@@ -11,8 +11,10 @@ sealed class Rutas(val ruta: String) {
     }
     object ClienteConfirmar : Rutas("cliente_confirmar")
     object ClienteMisPedidos : Rutas("cliente_mis_pedidos")
+    object ClientePerfil : Rutas("cliente_perfil")
     object ClienteSeguimiento : Rutas("cliente_seguimiento/{id}") {
         fun crearRuta(id: Int) = "cliente_seguimiento/$id"
+
     }
 
     // Rutas del Administrador
