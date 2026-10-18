@@ -6,15 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import com.tecsup.cafecampus.data.local.CafeDatabase
 import com.tecsup.cafecampus.data.prefs.PreferenciasStore
 import com.tecsup.cafecampus.data.repository.CafeRepositoryRoom
-import com.tecsup.cafecampus.ui.cliente.MisPedidosScreen
-import com.tecsup.cafecampus.ui.cliente.SeguimientoScreen
+import com.tecsup.cafecampus.ui.navigation.NavCafe
 import com.tecsup.cafecampus.ui.theme.CafeCampusTheme
-import com.tecsup.cafecampus.viewmodel.PedidosClienteViewModel
+import com.tecsup.cafecampus.viewmodel.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,48 +21,21 @@ class MainActivity : ComponentActivity() {
 
         val db = CafeDatabase.obtener(applicationContext)
         val prefs = PreferenciasStore(applicationContext)
-        val repository = CafeRepositoryRoom(
-            usuarioDao = db.usuarioDao(),
-            productoDao = db.productoDao(),
-            pedidoDao = db.pedidoDao()
-        )
+        val repo = CafeRepositoryRoom(db.usuarioDao(), db.productoDao(), db.pedidoDao())
 
-        // Instanciamos el cerebro del cliente
-        val pedidosClienteViewModel = PedidosClienteViewModel(repository)
+        // Usamos la fábrica que creaste para generar los ViewModels
+        val factory = CafeViewModelFactory(repo, prefs)
+        val sesionVm = ViewModelProvider(this, factory)[SesionViewModel::class.java]
+        val menuVm = ViewModelProvider(this, factory)[MenuViewModel::class.java]
+        val pedidosClienteVm = ViewModelProvider(this, factory)[PedidosClienteViewModel::class.java]
+        val panelAdminVm = ViewModelProvider(this, factory)[PanelAdminViewModel::class.java]
+        val pedidosAdminVm = ViewModelProvider(this, factory)[PedidosAdminViewModel::class.java]
+        val menuAdminVm = ViewModelProvider(this, factory)[MenuAdminViewModel::class.java]
 
         setContent {
             CafeCampusTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    // Simulamos que el estudiante "Juan" (ID 1) está logueado
-                    LaunchedEffect(Unit) {
-                        pedidosClienteViewModel.setClienteId(1)
-                    }
-
-                    // Navegación de prueba para el flujo del Cliente
-                    var pantallaCliente by remember { mutableStateOf("MIS_PEDIDOS") }
-                    var pedidoSeleccionadoId by remember { mutableIntStateOf(0) }
-
-                    when (pantallaCliente) {
-                        "MIS_PEDIDOS" -> {
-                            MisPedidosScreen(
-                                vmPedidos = pedidosClienteViewModel,
-                                onVerDetalle = { id ->
-                                    pedidoSeleccionadoId = id
-                                    pantallaCliente = "SEGUIMIENTO"
-                                }
-                            )
-                        }
-                        "SEGUIMIENTO" -> {
-                            SeguimientoScreen(
-                                pedidoId = pedidoSeleccionadoId,
-                                vmPedidos = pedidosClienteViewModel,
-                                onVolver = { pantallaCliente = "MIS_PEDIDOS" }
-                            )
-                        }
-                    }
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    NavCafe(prefs, sesionVm, menuVm, pedidosClienteVm, panelAdminVm, pedidosAdminVm, menuAdminVm)
                 }
             }
         }
