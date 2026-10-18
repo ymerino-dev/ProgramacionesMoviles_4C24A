@@ -10,27 +10,26 @@ import androidx.compose.ui.Modifier
 import com.tecsup.cafecampus.data.local.CafeDatabase
 import com.tecsup.cafecampus.data.prefs.PreferenciasStore
 import com.tecsup.cafecampus.data.repository.CafeRepositoryRoom
+import com.tecsup.cafecampus.ui.cliente.MisPedidosScreen
 import com.tecsup.cafecampus.ui.cliente.LoginScreen
 import com.tecsup.cafecampus.ui.theme.CafeCampusTheme
+import com.tecsup.cafecampus.viewmodel.PedidosClienteViewModel
 import com.tecsup.cafecampus.viewmodel.SesionViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Instanciamos la Base de Datos y el DataStore (El mueble y la pizarra)
         val db = CafeDatabase.obtener(applicationContext)
         val prefs = PreferenciasStore(applicationContext)
-
-        // 2. Creamos al Gerente (Repository) y le pasamos los bibliotecarios (DAOs)
         val repository = CafeRepositoryRoom(
             usuarioDao = db.usuarioDao(),
             productoDao = db.productoDao(),
             pedidoDao = db.pedidoDao()
         )
 
-        // 3. Creamos el Cerebro de la pantalla (ViewModel)
         val sesionViewModel = SesionViewModel(repository, prefs)
+        val pedidosViewModel = PedidosClienteViewModel(repository)
 
         setContent {
             CafeCampusTheme {
@@ -38,15 +37,17 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 4. ¡Mostramos la cara de la app!
+                    // PRUEBA DIRECTA: Puedes cambiar esto entre LoginScreen y MisPedidosScreen
                     LoginScreen(
                         vm = sesionViewModel,
                         onLoginSuccess = { rol ->
-                            // Más adelante conectaremos esto a la navegación real.
-                            // Por ahora, si el login es correcto, solo cambiará el color del botón.
-                            println("¡Login exitoso! Bienvenido, $rol")
+                            println("Acceso concedido como: $rol")
+                            // Aquí pondremos la navegación completa en el siguiente paso
                         }
                     )
+
+                    // Si quieres probar directamente tus pedidos, descomenta la línea de abajo y comenta la de arriba:
+                    // MisPedidosScreen(vmPedidos = pedidosViewModel, onVerDetalle = { idPedido -> })
                 }
             }
         }
