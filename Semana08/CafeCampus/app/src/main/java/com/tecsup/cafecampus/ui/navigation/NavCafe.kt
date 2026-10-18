@@ -15,6 +15,7 @@ import com.tecsup.cafecampus.ui.cliente.*
 import com.tecsup.cafecampus.viewmodel.*
 
 
+
 @Composable
 fun NavCafe(
     prefs: PreferenciasStore,
@@ -93,7 +94,8 @@ fun NavCafe(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Rutas.Splash.ruta) {
-                android.window.SplashScreen {
+
+                SplashScreen {
                     // Al terminar el Splash, revisamos si hay sesión para saltar el Login
                     if (rolActivo.isNotEmpty()) {
                         val destino =
@@ -127,7 +129,7 @@ fun NavCafe(
             composable(Rutas.ClienteDetalleProducto.ruta, arguments = listOf(navArgument("id") { type = NavType.IntType })) { backStack ->
                 val id = backStack.arguments?.getInt("id") ?: 0
                 val productos by menuVm.productos.collectAsState()
-                val p = productos.find { it.id == id }
+                val p = productos.find { id == it.id }
                 if (p != null) {
                     DetalleProductoScreen(producto = p, vm = menuVm, onVolver = { navController.popBackStack() })
                 }
@@ -177,7 +179,7 @@ fun NavCafe(
             composable(Rutas.AdminFormulario.ruta, arguments = listOf(navArgument("id") { type = NavType.IntType; defaultValue = 0 })) { backStack ->
                 val id = backStack.arguments?.getInt("id") ?: 0
                 val productos by menuAdminVm.productos.collectAsState()
-                FormularioProductoScreen(productoAEditar = productos.find { it.id == id }, vmAdmin = menuAdminVm, onVolver = { navController.popBackStack() })
+                FormularioProductoScreen(productoAEditar = productos.find { id == it.id }, vmAdmin = menuAdminVm, onVolver = { navController.popBackStack() })
             }
 
             composable(Rutas.AdminAjustes.ruta) {
