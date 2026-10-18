@@ -11,15 +11,10 @@ import androidx.compose.ui.Modifier
 import com.tecsup.cafecampus.data.local.CafeDatabase
 import com.tecsup.cafecampus.data.prefs.PreferenciasStore
 import com.tecsup.cafecampus.data.repository.CafeRepositoryRoom
-import com.tecsup.cafecampus.ui.admin.PedidosAdminScreen
-import com.tecsup.cafecampus.ui.cliente.ConfirmarPedidoScreen
-import com.tecsup.cafecampus.ui.cliente.DetalleProductoScreen
-import com.tecsup.cafecampus.ui.cliente.LoginScreen
+import com.tecsup.cafecampus.ui.cliente.MisPedidosScreen
+import com.tecsup.cafecampus.ui.cliente.SeguimientoScreen
 import com.tecsup.cafecampus.ui.theme.CafeCampusTheme
-import com.tecsup.cafecampus.viewmodel.MenuViewModel
-import com.tecsup.cafecampus.viewmodel.PedidosAdminViewModel
 import com.tecsup.cafecampus.viewmodel.PedidosClienteViewModel
-import com.tecsup.cafecampus.viewmodel.SesionViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,10 +28,8 @@ class MainActivity : ComponentActivity() {
             pedidoDao = db.pedidoDao()
         )
 
-        val sesionViewModel = SesionViewModel(repository, prefs)
-        val menuViewModel = MenuViewModel(repository)
+        // Instanciamos el cerebro del cliente
         val pedidosClienteViewModel = PedidosClienteViewModel(repository)
-        val pedidosAdminViewModel = PedidosAdminViewModel(repository)
 
         setContent {
             CafeCampusTheme {
@@ -44,53 +37,32 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Navegación de emergencia para probar el laboratorio
-                    var pantallaActual by remember { mutableStateOf("LOGIN") }
+                    // Simulamos que el estudiante "Juan" (ID 1) está logueado
+                    LaunchedEffect(Unit) {
+                        pedidosClienteViewModel.setClienteId(1)
+                    }
 
-                    when (pantallaActual) {
-                        "LOGIN" -> LoginScreen(
-                            vm = sesionViewModel,
-                            onLoginSuccess = { rol ->
-                                if (rol == "CLIENTE") {
-                                    pantallaActual = "COMPRAR"
-                                } else {
-                                    pantallaActual = "ADMIN"
-                                }
-                            }
-                        )
+                    // Navegación de prueba para el flujo del Cliente
+                    var pantallaCliente by remember { mutableStateOf("MIS_PEDIDOS") }
+                    var pedidoSeleccionadoId by remember { mutableIntStateOf(0) }
 
-                        "COMPRAR" -> {
-                            // Cargamos el primer producto para hacer una compra rápida
-                            val productos by menuViewModel.productos.collectAsState()
-                            val carrito by menuViewModel.carrito.collectAsState()
-
-                            if (carrito.isEmpty() && productos.isNotEmpty()) {
-                                DetalleProductoScreen(
-                                    producto = productos.first(),
-                                    vm = menuViewModel,
-                                    onVolver = { pantallaActual = "CONFIRMAR" }
-                                )
-                            }
-                        }
-
-                        "CONFIRMAR" -> {
-                            val carrito by menuViewModel.carrito.collectAsState()
-                            val usuario by sesionViewModel.usuarioActual.collectAsState()
-
-                            ConfirmarPedidoScreen(
-                                clienteId = usuario?.id ?: 1,
-                                carrito = carrito,
-                                total = menuViewModel.total(),
+                    when (pantallaCliente) {
+                        "MIS_PEDIDOS" -> {
+                            MisPedidosScreen(
                                 vmPedidos = pedidosClienteViewModel,
-                                onSeguirPidiendo = { },
-                                onConfirmado = {
-                                    menuViewModel.vaciar()
-                                    pantallaActual = "ADMIN" // Tras confirmar, saltamos directo al admin para ver el pedido
+                                onVerDetalle = { id ->
+                                    pedidoSeleccionadoId = id
+                                    pantallaCliente = "SEGUIMIENTO"
                                 }
                             )
                         }
-
-                        "ADMIN" -> PedidosAdminScreen(vmAdmin = pedidosAdminViewModel)
+                        "SEGUIMIENTO" -> {
+                            SeguimientoScreen(
+                                pedidoId = pedidoSeleccionadoId,
+                                vmPedidos = pedidosClienteViewModel,
+                                onVolver = { pantallaCliente = "MIS_PEDIDOS" }
+                            )
+                        }
                     }
                 }
             }
