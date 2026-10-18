@@ -64,4 +64,11 @@ class SesionViewModel(
     fun limpiarError() {
         _error.value = null
     }
+    fun logout() {
+        _usuarioActual.value = null
+        _error.value = null
+        viewModelScope.launch {
+            prefs.cerrarSesion()
+        }
+    }
 }

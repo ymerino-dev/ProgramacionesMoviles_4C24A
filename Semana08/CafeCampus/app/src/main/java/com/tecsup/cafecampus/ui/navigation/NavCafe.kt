@@ -13,10 +13,7 @@ import com.tecsup.cafecampus.data.prefs.PreferenciasStore
 import com.tecsup.cafecampus.ui.admin.*
 import com.tecsup.cafecampus.ui.cliente.*
 import com.tecsup.cafecampus.viewmodel.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun NavCafe(
@@ -32,12 +29,10 @@ fun NavCafe(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route
 
-    // Identificamos el rol para mostrar los botones correctos abajo
     val usuarioActual by sesionVm.usuarioActual.collectAsState()
     val perfilGuardado by prefs.perfilActivo.collectAsState(initial = "")
     val rolActivo = usuarioActual?.rol ?: perfilGuardado
 
-    // Pantallas donde NO queremos que se vea la barra de abajo
     val rutasSinBarraInferior = listOf(
         Rutas.Splash.ruta, Rutas.Login.ruta, Rutas.ClienteDetalleProducto.ruta,
         Rutas.ClienteConfirmar.ruta, Rutas.ClienteSeguimiento.ruta, Rutas.AdminFormulario.ruta
@@ -63,11 +58,11 @@ fun NavCafe(
                         NavigationBarItem(
                             icon = { Icon(Icons.Default.Person, "Perfil") },
                             label = { Text("Perfil") },
-                            selected = false,
-                            onClick = { navController.navigate(Rutas.AdminAjustes.ruta) }
+                            selected = rutaActual == Rutas.ClientePerfil.ruta,
+                            onClick = { navController.navigate(Rutas.ClientePerfil.ruta) }
                         )
                     } else if (rolActivo == "ADMIN") {
-                        // Barra inferior completa para el Administrador
+                        // SOLO 4 BOTONES REQUERIDOS POR EL PDF (Sin perfil redundante)
                         NavigationBarItem(
                             icon = { Icon(Icons.Default.Dashboard, "Panel") },
                             label = { Text("Panel") },
@@ -91,12 +86,6 @@ fun NavCafe(
                             label = { Text("Ajustes") },
                             selected = rutaActual == Rutas.AdminAjustes.ruta,
                             onClick = { navController.navigate(Rutas.AdminAjustes.ruta) }
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.Person, "Perfil") },
-                            label = { Text("Perfil") },
-                            selected = rutaActual == Rutas.ClientePerfil.ruta,
-                            onClick = { navController.navigate(Rutas.ClientePerfil.ruta) }
                         )
                     }
                 }
@@ -138,26 +127,24 @@ fun NavCafe(
                     onVerDetalle = { id -> navController.navigate(Rutas.ClienteDetalleProducto.crearRuta(id)) },
                     onVerCarrito = { navController.navigate(Rutas.ClienteConfirmar.ruta) },
                     onIrMisPedidos = { navController.navigate(Rutas.ClienteMisPedidos.ruta) },
-                    onIrPerfil = { navController.navigate(Rutas.AdminAjustes.ruta) }
+                    onIrPerfil = { navController.navigate(Rutas.ClientePerfil.ruta) }
                 )
             }
+
             composable(Rutas.ClientePerfil.ruta) {
                 val usuarioActualState by sesionVm.usuarioActual.collectAsState()
-
                 PerfilClienteScreen(
                     usuario = usuarioActualState,
                     prefs = prefs,
                     onCerrarSesion = {
-                        // Limpiamos el DataStore de forma segura y volvemos al Login
-                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                            prefs.cerrarSesion()
-                        }
+                        sesionVm.logout()
                         navController.navigate(Rutas.Login.ruta) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                 )
             }
+
             composable(Rutas.ClienteDetalleProducto.ruta, arguments = listOf(navArgument("id") { type = NavType.IntType })) { backStack ->
                 val id = backStack.arguments?.getInt("id") ?: 0
                 val productos by menuVm.productos.collectAsState()
@@ -220,10 +207,7 @@ fun NavCafe(
                     prefs = prefs,
                     onCambiarPerfil = { },
                     onCerrarSesion = {
-                        // Limpieza segura y asíncrona del DataStore antes de regresar al Login
-                        CoroutineScope(Dispatchers.IO).launch {
-                            prefs.cerrarSesion()
-                        }
+                        sesionVm.logout()
                         navController.navigate(Rutas.Login.ruta) {
                             popUpTo(0) { inclusive = true }
                         }
