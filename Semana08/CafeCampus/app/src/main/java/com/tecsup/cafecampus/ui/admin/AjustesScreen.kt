@@ -2,6 +2,7 @@ package com.tecsup.cafecampus.ui.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -122,11 +123,14 @@ fun AjustesScreen(
                     }
                 }
 
+                // 2. Botón de "Cambiar de perfil" (Modo práctica) con clickable interactivo
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onCambiarPerfil() }, // <-- Esto garantiza que responda al toque
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = colorAdmin),
-                    onClick = onCambiarPerfil
+                    colors = CardDefaults.cardColors(containerColor = colorAdmin)
                 ) {
                     Row(
                         modifier = Modifier
