@@ -1,10 +1,12 @@
 package com.tecsup.cafecampus.ui.cliente
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -54,7 +56,13 @@ fun ConfirmarPedidoScreen(
                 .padding(20.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            // CONTENIDO CON SCROLL VERTICAL (Evita que los botones desaparezcan)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
 
                 // 1. Tarjeta resumen de los productos en el carrito
                 Card(
@@ -64,96 +72,100 @@ fun ConfirmarPedidoScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        LazyColumn(modifier = Modifier.heightIn(max = 180.dp)) {
-                            items(carrito) { item ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 6.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(Color(0xFFFFEDD5)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("🍲", fontSize = 16.sp)
-                                        }
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Column {
-                                            Text(item.producto.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                            Text("x${item.cantidad}", color = Color.Gray, fontSize = 12.sp)
-                                        }
+                        // Usamos un forEach en lugar de LazyColumn para permitir el scroll padre
+                        carrito.forEach { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color(0xFFFFEDD5)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("🍲", fontSize = 16.sp)
                                     }
-                                    Text("S/ ${item.producto.precio * item.cantidad}", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(item.producto.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
+                                        Text("x${item.cantidad}", color = Color.Gray, fontSize = 12.sp)
+                                    }
                                 }
+                                Text("S/ ${item.producto.precio * item.cantidad}", fontWeight = FontWeight.Bold, color = Color.DarkGray)
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 2. Hora de recojo
-                Text("Hora de recojo", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    horas.forEach { hora ->
-                        val seleccionado = horaSeleccionada == hora
-                        Button(
-                            onClick = { horaSeleccionada = hora },
-                            shape = RoundedCornerShape(20.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (seleccionado) colorNaranja else Color(0xFFF1F5F9)
-                            ),
-                            modifier = Modifier.weight(1f).height(40.dp)
-                        ) {
-                            Text(
-                                text = hora,
-                                color = if (seleccionado) Color.White else Color.DarkGray,
-                                fontSize = 13.sp
-                            )
+                // 2. Hora de recojo (AHORA CON SCROLL HORIZONTAL)
+                Column {
+                    Text("Hora de recojo", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()), // <-- Evita que los textos se apachurren
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        horas.forEach { hora ->
+                            val seleccionado = horaSeleccionada == hora
+                            Button(
+                                onClick = { horaSeleccionada = hora },
+                                shape = RoundedCornerShape(20.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (seleccionado) colorNaranja else Color(0xFFF1F5F9)
+                                ),
+                                modifier = Modifier.height(40.dp)
+                            ) {
+                                Text(
+                                    text = hora,
+                                    color = if (seleccionado) Color.White else Color.DarkGray,
+                                    fontSize = 13.sp
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
                 // 3. Forma de pago
-                Text("Forma de pago", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val esCaja = pagoSeleccionado == "CAJA"
-                    OutlinedButton(
-                        onClick = { pagoSeleccionado = "CAJA" },
-                        modifier = Modifier.weight(1f).height(44.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = if (esCaja) Color(0xFFFFEDD5) else Color.Transparent,
-                            contentColor = if (esCaja) colorNaranja else Color.Gray
-                        )
-                    ) {
-                        Text("Pagar en caja", fontWeight = FontWeight.Bold)
-                    }
+                Column {
+                    Text("Forma de pago", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        val esCaja = pagoSeleccionado == "CAJA"
+                        OutlinedButton(
+                            onClick = { pagoSeleccionado = "CAJA" },
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (esCaja) Color(0xFFFFEDD5) else Color.Transparent,
+                                contentColor = if (esCaja) colorNaranja else Color.Gray
+                            ),
+                            border = BorderStroke(1.dp, if (esCaja) colorNaranja else Color.LightGray)
+                        ) {
+                            Text("Pagar en caja", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
 
-                    OutlinedButton(
-                        onClick = { pagoSeleccionado = "YAPE" },
-                        modifier = Modifier.weight(1f).height(44.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = if (!esCaja) Color(0xFFFFEDD5) else Color.Transparent,
-                            contentColor = if (!esCaja) colorNaranja else Color.Gray
-                        )
-                    ) {
-                        Text("Yape / Plin", fontWeight = FontWeight.Bold)
+                        OutlinedButton(
+                            onClick = { pagoSeleccionado = "YAPE" },
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (!esCaja) Color(0xFFFFEDD5) else Color.Transparent,
+                                contentColor = if (!esCaja) colorNaranja else Color.Gray
+                            ),
+                            border = BorderStroke(1.dp, if (!esCaja) colorNaranja else Color.LightGray)
+                        ) {
+                            Text("Yape / Plin", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
 
                 // 4. Desglose de totales
                 Card(
@@ -182,11 +194,12 @@ fun ConfirmarPedidoScreen(
                 }
             }
 
-            // 5. Botones inferiores
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 5. Botones inferiores (Siempre visibles al final)
             Column {
                 Button(
                     onClick = {
-                        // Extraemos y juntamos todas las notas
                         val notasDelCliente = carrito
                             .filter { it.nota.isNotBlank() }
                             .joinToString(" | ") { "${it.producto.nombre}: ${it.nota}" }
@@ -213,7 +226,8 @@ fun ConfirmarPedidoScreen(
                     onClick = onSeguirPidiendo,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorNaranja)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorNaranja),
+                    border = BorderStroke(1.dp, colorNaranja)
                 ) {
                     Text("Seguir pidiendo", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }

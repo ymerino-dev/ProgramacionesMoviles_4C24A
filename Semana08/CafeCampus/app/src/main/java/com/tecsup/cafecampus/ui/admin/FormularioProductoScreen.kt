@@ -1,8 +1,7 @@
 package com.tecsup.cafecampus.ui.admin
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,10 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tecsup.cafecampus.R
 import com.tecsup.cafecampus.data.local.entity.Producto
 import com.tecsup.cafecampus.viewmodel.MenuAdminViewModel
 
@@ -61,165 +63,158 @@ fun FormularioProductoScreen(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // 1. Tarjeta superior para imagen del producto (Toca para elegir color)
+                // Tarjeta superior con la IMAGEN REAL
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEDD5))
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(50.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFEA580C)),
-                            contentAlignment = Alignment.Center
+                                .background(Color.White)
                         ) {
-                            Text("🍔", fontSize = 18.sp)
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("Imagen del producto", fontWeight = FontWeight.Bold, color = Color(0xFFEA580C), fontSize = 14.sp)
-                            Text("Toca para elegir color", color = Color.Gray, fontSize = 12.sp)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                // 2. Campo: Nombre del producto (etiqueta superior gris)
-                OutlinedTextField(
-                    value = nombre,
-                    onValueChange = { nombre = it; errorValidacion = "" },
-                    label = { Text("Nombre del producto", color = Color.Gray) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorAdmin,
-                        focusedLabelColor = colorAdmin
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // 3. Campo: Categoría con flecha desplegable simulada
-                OutlinedTextField(
-                    value = categoria,
-                    onValueChange = { categoria = it },
-                    label = { Text("Categoría", color = Color.Gray) },
-                    trailingIcon = { Icon(Icons.Default.ChevronRight, contentDescription = "Desplegar", tint = Color.Gray) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorAdmin,
-                        focusedLabelColor = colorAdmin
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // 4. Campo: Precio (S/)
-                OutlinedTextField(
-                    value = precio,
-                    onValueChange = { precio = it; errorValidacion = "" },
-                    label = { Text("Precio (S/)", color = Color.Gray) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorAdmin,
-                        focusedLabelColor = colorAdmin
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // 5. Campo: Descripción
-                OutlinedTextField(
-                    value = descripcion,
-                    onValueChange = { descripcion = it },
-                    label = { Text("Descripción", color = Color.Gray) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorAdmin,
-                        focusedLabelColor = colorAdmin
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // 6. Tarjeta independiente para "Disponible en el menú" con subcomentario
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBF7)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Disponible en el menú", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text("Los estudiantes podrán pedirlo", color = Color.Gray, fontSize = 12.sp)
-                        }
-                        Switch(
-                            checked = disponible,
-                            onCheckedChange = { disponible = it },
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = colorAdmin)
-                        )
-                    }
-                }
-
-                if (errorValidacion.isNotEmpty()) {
-                    Text(errorValidacion, color = Color(0xFFDC2626), fontSize = 13.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 7. Botones inferiores de Guardar y Cancelar
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = {
-                        val precioNum = precio.toDoubleOrNull() ?: 0.0
-                        if (nombre.isBlank()) {
-                            errorValidacion = "El nombre es obligatorio"
-                        } else if (precioNum <= 0.0) {
-                            errorValidacion = "El precio debe ser mayor que 0"
-                        } else {
-                            val p = Producto(
-                                id = productoAEditar?.id ?: 0,
-                                nombre = nombre,
-                                descripcion = descripcion,
-                                categoria = categoria,
-                                precio = precioNum,
-                                disponible = disponible,
-                                icono = productoAEditar?.icono ?: "cafe"
+                            Image(
+                                painter = painterResource(id = R.drawable.menu_dia),
+                                contentDescription = "Imagen del producto",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
-                            vmAdmin.guardar(p)
-                            onVolver()
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    "Imagen del producto",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFEA580C),
+                                    fontSize = 14.sp
+                                )
+                                Text("Toca para elegir color", color = Color.Gray, fontSize = 12.sp)
+                            }
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorAdmin)
-                ) {
-                    Text("Guardar producto", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it; errorValidacion = "" },
+                        label = { Text("Nombre del producto", color = Color.Gray) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = categoria,
+                        onValueChange = { categoria = it },
+                        label = { Text("Categoría", color = Color.Gray) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = "Desplegar",
+                                tint = Color.Gray
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = precio,
+                        onValueChange = { precio = it; errorValidacion = "" },
+                        label = { Text("Precio (S/)", color = Color.Gray) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = descripcion,
+                        onValueChange = { descripcion = it },
+                        label = { Text("Descripción", color = Color.Gray) },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBF7))
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Disponible en el menú",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    "Los estudiantes podrán pedirlo",
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Switch(
+                                checked = disponible,
+                                onCheckedChange = { disponible = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = colorAdmin
+                                )
+                            )
+                        }
+                    }
+
+                    if (errorValidacion.isNotEmpty()) {
+                        Text(errorValidacion, color = Color(0xFFDC2626), fontSize = 13.sp)
+                    }
                 }
 
-                OutlinedButton(
-                    onClick = onVolver,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray),
-                    border = BorderStroke(1.dp, Color(0xFFCBD5E1))
-                ) {
-                    Text("Cancelar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Button(
+                        onClick = {
+                            val precioNum = precio.toDoubleOrNull() ?: 0.0
+                            if (nombre.isBlank()) {
+                                errorValidacion = "El nombre es obligatorio"
+                            } else if (precioNum <= 0.0) {
+                                errorValidacion = "El precio debe ser mayor que 0"
+                            } else {
+                                val p = Producto(
+                                    id = productoAEditar?.id ?: 0,
+                                    nombre = nombre,
+                                    descripcion = descripcion,
+                                    categoria = categoria,
+                                    precio = precioNum,
+                                    disponible = disponible,
+                                    icono = productoAEditar?.icono ?: "cafe"
+                                )
+                                vmAdmin.guardar(p)
+                                onVolver()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorAdmin)
+                    ) {
+                        Text("Guardar producto", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    OutlinedButton(
+                        onClick = onVolver,
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray)
+                    ) {
+                        Text("Cancelar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

@@ -33,7 +33,7 @@ fun NavCafe(
 
     val usuarioActual by sesionVm.usuarioActual.collectAsState()
     val perfilGuardado by prefs.perfilActivo.collectAsState(initial = "")
-    val rolActivo = usuarioActual?.rol ?: perfilGuardado
+    val rolActivo = if (perfilGuardado.isNotEmpty()) perfilGuardado else (usuarioActual?.rol ?: "")
 
     val rutasSinBarraInferior = listOf(
         Rutas.Splash.ruta, Rutas.Login.ruta, Rutas.ClienteDetalleProducto.ruta, Rutas.AdminFormulario.ruta
@@ -185,11 +185,10 @@ fun NavCafe(
             composable(Rutas.ClienteMisPedidos.ruta) {
                 val usuarioActualState by sesionVm.usuarioActual.collectAsState()
 
-                // Sincronizamos el ID del cliente logueado en tiempo real
+                // Sincronizamos el ID del cliente. Si estamos en modo práctica (usuario null), usamos 1 por defecto
                 LaunchedEffect(usuarioActualState) {
-                    usuarioActualState?.id?.let { id ->
-                        pedidosClienteVm.setClienteId(id)
-                    }
+                    val idCliente = usuarioActualState?.id ?: 1
+                    pedidosClienteVm.setClienteId(idCliente)
                 }
 
                 MisPedidosScreen(
@@ -197,6 +196,7 @@ fun NavCafe(
                     onVerDetalle = { id -> navController.navigate(Rutas.ClienteSeguimiento.crearRuta(id)) }
                 )
             }
+
             composable(Rutas.ClienteSeguimiento.ruta, arguments = listOf(navArgument("id") { type = NavType.IntType })) { backStack ->
                 SeguimientoScreen(
                     pedidoId = backStack.arguments?.getInt("id") ?: 0,
