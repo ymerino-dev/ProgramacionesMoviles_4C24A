@@ -137,6 +137,16 @@ fun NavCafe(
                 PerfilClienteScreen(
                     usuario = usuarioActualState,
                     prefs = prefs,
+                    onCambiarPerfil = {
+                        val nuevoRol = if (rolActivo == "ADMIN") "CLIENTE" else "ADMIN"
+                        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            prefs.guardarPerfil(nuevoRol)
+                        }
+                        val destinoSiguiente = if (nuevoRol == "CLIENTE") Rutas.ClienteMenu.ruta else Rutas.AdminPanel.ruta
+                        navController.navigate(destinoSiguiente) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                     onCerrarSesion = {
                         sesionVm.logout()
                         navController.navigate(Rutas.Login.ruta) {
@@ -242,10 +252,21 @@ fun NavCafe(
                     usuario = usuarioActual,
                     prefs = prefs,
                     onCambiarPerfil = {
-                        // Cambiamos el rol activo de forma directa y limpia
+                        // 1. Matamos la sesión actual en memoria del ViewModel
+                        sesionVm.logout()
+
+                        // 2. Determinamos el rol al que queremos saltar
                         val nuevoRol = if (rolActivo == "ADMIN") "CLIENTE" else "ADMIN"
+
+                        // 3. Guardamos el nuevo perfil en las preferencias
                         kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                             prefs.guardarPerfil(nuevoRol)
+                        }
+
+                        // 4. Redirigimos de inmediato a la pantalla principal correspondiente
+                        val destino = if (nuevoRol == "CLIENTE") Rutas.ClienteMenu.ruta else Rutas.AdminPanel.ruta
+                        navController.navigate(destino) {
+                            popUpTo(0) { inclusive = true }
                         }
                     },
                     onCerrarSesion = {

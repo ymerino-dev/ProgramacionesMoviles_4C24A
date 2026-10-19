@@ -123,14 +123,13 @@ fun AjustesScreen(
                     }
                 }
 
-                // 2. Botón de "Cambiar de perfil" (Modo práctica) con clickable interactivo
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onCambiarPerfil() }, // <-- Esto garantiza que responda al toque
+
+                // 2. Botón de "Cambiar de perfil" usando Surface interactiva
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = colorAdmin)
+                    color = colorAdmin,
+                    onClick = onCambiarPerfil // <-- Dispara la acción al instante sin conflictos de capas
                 ) {
                     Row(
                         modifier = Modifier
