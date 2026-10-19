@@ -14,7 +14,9 @@ import com.tecsup.cafecampus.ui.admin.*
 import com.tecsup.cafecampus.ui.cliente.*
 import com.tecsup.cafecampus.viewmodel.*
 import kotlinx.coroutines.runBlocking
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 @Composable
 fun NavCafe(
     prefs: PreferenciasStore,
@@ -239,7 +241,13 @@ fun NavCafe(
                 AjustesScreen(
                     usuario = usuarioActual,
                     prefs = prefs,
-                    onCambiarPerfil = { },
+                    onCambiarPerfil = {
+                        // Cambiamos el rol activo de forma directa y limpia
+                        val nuevoRol = if (rolActivo == "ADMIN") "CLIENTE" else "ADMIN"
+                        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            prefs.guardarPerfil(nuevoRol)
+                        }
+                    },
                     onCerrarSesion = {
                         sesionVm.logout()
                         navController.navigate(Rutas.Login.ruta) {

@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.tecsup.cafecampus.data.local.CafeDatabase
@@ -38,6 +40,15 @@ class MainActivity : ComponentActivity() {
                     NavCafe(prefs, sesionVm, menuVm, pedidosClienteVm, panelAdminVm, pedidosAdminVm, menuAdminVm)
                 }
             }
+            val prefs = PreferenciasStore(applicationContext)
+            val modoOscuro by prefs.modoOscuro.collectAsState(initial = false)
+
+            CafeCampusTheme(darkTheme = modoOscuro) { // <-- Lee el modo oscuro persistido
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    NavCafe(prefs, sesionVm, menuVm, pedidosClienteVm, panelAdminVm, pedidosAdminVm, menuAdminVm)
+                }
+            }
+
         }
     }
 }
