@@ -234,6 +234,7 @@ fun NavCafe(
                 DetallePedidoAdminScreen(
                     pedidoId = idPedido,
                     vmAdmin = pedidosAdminVm,
+                    vmPedidos = pedidosClienteVm, // <-- Pasamos este parámetro clave
                     onVolver = { navController.popBackStack() }
                 )
             }

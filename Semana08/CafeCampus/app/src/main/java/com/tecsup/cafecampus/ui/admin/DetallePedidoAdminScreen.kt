@@ -3,8 +3,6 @@ package com.tecsup.cafecampus.ui.admin
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -20,16 +18,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tecsup.cafecampus.model.EstadoPedido
 import com.tecsup.cafecampus.viewmodel.PedidosAdminViewModel
+import com.tecsup.cafecampus.viewmodel.PedidosClienteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetallePedidoAdminScreen(
     pedidoId: Int,
     vmAdmin: PedidosAdminViewModel,
+    vmPedidos: PedidosClienteViewModel, // <-- MAGIA AQUÍ: Reutilizamos el cerebro del estudiante
     onVolver: () -> Unit
 ) {
-    val pedidos by vmAdmin.pedidos.collectAsState()
-    val p = pedidos.find { it.pedido.id == pedidoId }
+    // Observador en tiempo real, 100% independiente de los filtros del admin
+    val pedidoFlow by vmPedidos.pedido(pedidoId).collectAsState(initial = null)
 
     val colorAdmin = Color(0xFF4F46E5) // Azul / Índigo principal
 
@@ -45,14 +45,15 @@ fun DetallePedidoAdminScreen(
             )
         }
     ) { padding ->
-        if (p == null) {
+        val pedidoActual = pedidoFlow
+        if (pedidoActual == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Pedido no encontrado", color = Color.Gray)
+                CircularProgressIndicator(color = colorAdmin)
             }
             return@Scaffold
         }
 
-        val estadoActual = p.pedido.estado
+        val estadoActual = pedidoActual.pedido.estado
 
         Column(
             modifier = Modifier
@@ -64,7 +65,7 @@ fun DetallePedidoAdminScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState()), // Permite desplazamiento si la pantalla es pequeña
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // ==========================================
@@ -83,13 +84,12 @@ fun DetallePedidoAdminScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Pedido #${p.pedido.id.toString().padStart(4, '0')}",
+                                text = "Pedido #${pedidoActual.pedido.id.toString().padStart(4, '0')}",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 color = Color.Black
                             )
 
-                            // Insignia de Estado en azul sombreado
                             Surface(
                                 color = Color(0xFFDBEAFE),
                                 shape = RoundedCornerShape(8.dp)
@@ -112,9 +112,8 @@ fun DetallePedidoAdminScreen(
 
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        // Letras grises: hora de emisión y recojo
                         Text(
-                            text = "Hoy 10:12  ·  Recojo ${p.pedido.horaRecojo}",
+                            text = "Hoy 10:12  ·  Recojo ${pedidoActual.pedido.horaRecojo}",
                             color = Color.Gray,
                             fontSize = 13.sp
                         )
@@ -134,7 +133,7 @@ fun DetallePedidoAdminScreen(
                         Text("Cliente", color = Color.Gray, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "${p.cliente.nombre} · ${p.cliente.rol.lowercase().replaceFirstChar { it.uppercase() }}",
+                            text = "${pedidoActual.cliente.nombre} · ${pedidoActual.cliente.rol.lowercase().replaceFirstChar { it.uppercase() }}",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color.Black
@@ -144,8 +143,7 @@ fun DetallePedidoAdminScreen(
                         HorizontalDivider(color = Color(0xFFE2E8F0))
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Lista de productos del pedido
-                        p.detalles.forEach { detalle ->
+                        pedidoActual.detalles.forEach { detalle ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -170,7 +168,6 @@ fun DetallePedidoAdminScreen(
                         HorizontalDivider(color = Color(0xFFE2E8F0))
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Monto Total en Azul Negrita
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -178,43 +175,41 @@ fun DetallePedidoAdminScreen(
                         ) {
                             Text("Total", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
                             Text(
-                                text = "S/ ${p.pedido.total}",
+                                text = "S/ ${pedidoActual.pedido.total}",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
-                                color = colorAdmin // Azul negrita
+                                color = colorAdmin
                             )
                         }
                     }
                 }
 
                 // ==========================================
-                // TARJETA 3: Nota del cliente (Fondo Amarillo)
+                // TARJETA 3: Nota del cliente
                 // ==========================================
-                if (p.pedido.nota.isNotBlank()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)) // Fondo amarillo/ámbar claro
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Nota del cliente",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = Color(0xFFB45309) // Marrón / letras oscuras
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = p.pedido.nota,
-                                fontSize = 14.sp,
-                                color = Color(0xFF92400E)
-                            )
-                        }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Nota del cliente",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color(0xFFB45309)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (pedidoActual.pedido.nota.isNotBlank()) pedidoActual.pedido.nota else "Sin observaciones del cliente",
+                            fontSize = 14.sp,
+                            color = Color(0xFF92400E)
+                        )
                     }
                 }
 
                 // ==========================================
-                // SECCIÓN: Cambiar estado (4 Pastillas)
+                // SECCIÓN: Cambiar estado
                 // ==========================================
                 Column {
                     Text("Cambiar estado", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
@@ -258,15 +253,12 @@ fun DetallePedidoAdminScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ==========================================
             // BOTONES INFERIORES DE ACCIÓN GERENCIAL
-            // ==========================================
             if (estadoActual != EstadoPedido.ENTREGADO.name && estadoActual != EstadoPedido.CANCELADO.name) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {
-                            vmAdmin.avanzar(p.pedido.id, estadoActual)
-                            onVolver()
+                            vmAdmin.avanzar(pedidoActual.pedido.id, estadoActual)
                         },
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(14.dp),
@@ -286,15 +278,12 @@ fun DetallePedidoAdminScreen(
 
                     OutlinedButton(
                         onClick = {
-                            vmAdmin.cancelar(p.pedido.id)
+                            vmAdmin.cancelar(pedidoActual.pedido.id)
                             onVolver()
                         },
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color(0xFFDC2626)
-                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626)),
                         border = BorderStroke(1.dp, Color(0xFFDC2626))
                     ) {
                         Text("Cancelar pedido", fontSize = 16.sp, fontWeight = FontWeight.Bold)
