@@ -1,5 +1,8 @@
 package com.tecsup.cafecampus.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -96,7 +99,11 @@ fun NavCafe(
         NavHost(
             navController = navController,
             startDestination = Rutas.Splash.ruta,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
             composable(Rutas.Splash.ruta) {
                 SplashScreen {
@@ -193,7 +200,9 @@ fun NavCafe(
 
                 MisPedidosScreen(
                     vmPedidos = pedidosClienteVm,
-                    onVerDetalle = { id -> navController.navigate(Rutas.ClienteSeguimiento.crearRuta(id)) }
+                    onVerDetalle = { id -> navController.navigate(Rutas.ClienteSeguimiento.crearRuta(id)) },
+                    onRepetirPedido = { pedido -> menuVm.repetirPedido(pedido) },
+                    onIrAlCarrito = { navController.navigate(Rutas.ClienteConfirmar.ruta) }
                 )
             }
 

@@ -1,5 +1,6 @@
 package com.tecsup.cafecampus.ui.cliente
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -163,11 +164,25 @@ fun DetalleProductoScreen(
                             Icon(Icons.Default.Remove, contentDescription = "Menos", tint = colorNaranja, modifier = Modifier.size(16.dp))
                         }
 
-                        Text(
-                            text = cantidad.toString(),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                        AnimatedContent(
+                            targetState = cantidad,
+                            transitionSpec = {
+                                if (targetState > initialState) {
+                                    (slideInVertically { height -> height } + fadeIn()).togetherWith(
+                                        slideOutVertically { height -> -height } + fadeOut())
+                                } else {
+                                    (slideInVertically { height -> -height } + fadeIn()).togetherWith(
+                                        slideOutVertically { height -> height } + fadeOut())
+                                }.using(SizeTransform(clip = false))
+                            },
+                            label = "CantidadAnimation"
+                        ) { targetCantidad ->
+                            Text(
+                                text = targetCantidad.toString(),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
 
                         IconButton(
                             onClick = { cantidad++ },
