@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tecsup.cafecampus.data.local.dao.PedidosPorHora
 import com.tecsup.cafecampus.data.local.relation.PedidoConDetalle
 import com.tecsup.cafecampus.viewmodel.PanelAdminViewModel
 
@@ -32,6 +33,10 @@ fun PanelScreen(
     val preparando by vmPanel.preparando.collectAsState()
     val listos by vmPanel.listos.collectAsState()
     val ventasHoy by vmPanel.ventasHoy.collectAsState()
+
+    val productoMasVendido by vmPanel.productoMasVendido.collectAsState()
+    val ventasPorMetodoPago by vmPanel.ventasPorMetodoPago.collectAsState()
+    val pedidosPorHora by vmPanel.pedidosPorHora.collectAsState()
 
     val colorAdmin = Color(0xFF4F46E5) // Índigo del administrador
 
@@ -100,7 +105,82 @@ fun PanelScreen(
             }
 
             item {
-                // 3. Gráfico de barras: Pedidos por hora
+                // 3. Reporte del día: Producto más vendido y Ventas por Método de Pago
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBF7))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Reportes del día", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // Producto más vendido
+                            Card(
+                                modifier = Modifier.weight(1f),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text("🔥 Más vendido", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD97706))
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = productoMasVendido?.nombreProducto ?: "Sin ventas",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        text = "${productoMasVendido?.cantidadTotal ?: 0} ud. vendidas",
+                                        fontSize = 11.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+
+                            // Ventas por pago
+                            Card(
+                                modifier = Modifier.weight(1f),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E7FF)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text("💳 Métodos de pago", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4F46E5))
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    if (ventasPorMetodoPago.isEmpty()) {
+                                        Text("Sin datos", fontSize = 12.sp, color = Color.Gray)
+                                    } else {
+                                        ventasPorMetodoPago.forEach { p ->
+                                            Text(
+                                                text = "${p.pago}: S/ ${p.total}",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = Color.DarkGray
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                // 4. Gráfico de barras real: Pedidos por hora
+                val maxCantidad = (pedidosPorHora.maxOfOrNull { it.cantidad } ?: 1).coerceAtLeast(1)
+                val itemsHora = if (pedidosPorHora.isNotEmpty()) {
+                    pedidosPorHora
+                } else {
+                    listOf(
+                        PedidosPorHora("8h", 0),
+                        PedidosPorHora("9h", 0),
+                        PedidosPorHora("10h", 0),
+                        PedidosPorHora("11h", 0),
+                        PedidosPorHora("12h", 0)
+                    )
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -114,11 +194,16 @@ fun PanelScreen(
                             horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            BarraHora("8h", 3, 40)
-                            BarraHora("9h", 6, 70)
-                            BarraHora("10h", 9, 110, destacado = true)
-                            BarraHora("11h", 5, 60)
-                            BarraHora("12h", 7, 85)
+                            itemsHora.forEach { item ->
+                                val alturaCalculada = if (item.cantidad == 0) 20 else ((item.cantidad.toFloat() / maxCantidad.toFloat()) * 90 + 20).toInt()
+                                val esDestacado = item.cantidad == maxCantidad && item.cantidad > 0
+                                BarraHora(
+                                    hora = item.hora,
+                                    cantidad = item.cantidad,
+                                    alturaDp = alturaCalculada,
+                                    destacado = esDestacado
+                                )
+                            }
                         }
                     }
                 }

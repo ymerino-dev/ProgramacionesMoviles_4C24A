@@ -1,5 +1,8 @@
 package com.tecsup.cafecampus.data.repository
 
+import com.tecsup.cafecampus.data.local.dao.PedidosPorHora
+import com.tecsup.cafecampus.data.local.dao.ProductoMasVendido
+import com.tecsup.cafecampus.data.local.dao.VentasPorMetodoPago
 import com.tecsup.cafecampus.data.local.entity.Producto
 import com.tecsup.cafecampus.data.local.entity.Usuario
 import com.tecsup.cafecampus.data.local.relation.PedidoConDetalle
@@ -27,4 +30,9 @@ interface CafeRepository {
     // Panel
     fun observarVentasHoy(inicioDia: Long): Flow<Double>
     fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int>
+
+    // Reportes
+    fun observarProductoMasVendido(): Flow<ProductoMasVendido?>
+    fun observarVentasPorMetodoPago(): Flow<List<VentasPorMetodoPago>>
+    fun observarPedidosPorHora(): Flow<List<PedidosPorHora>>
 }

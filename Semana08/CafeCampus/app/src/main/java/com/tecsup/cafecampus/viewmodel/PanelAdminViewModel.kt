@@ -2,6 +2,9 @@ package com.tecsup.cafecampus.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.cafecampus.data.local.dao.PedidosPorHora
+import com.tecsup.cafecampus.data.local.dao.ProductoMasVendido
+import com.tecsup.cafecampus.data.local.dao.VentasPorMetodoPago
 import com.tecsup.cafecampus.data.repository.CafeRepository
 import com.tecsup.cafecampus.model.EstadoPedido
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,4 +38,14 @@ class PanelAdminViewModel(private val repo: CafeRepository) : ViewModel() {
 
     val listos: StateFlow<Int> = repo.observarCantidadPorEstado(EstadoPedido.LISTO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    // 3. Reportes avanzados y estadísticas en tiempo real
+    val productoMasVendido: StateFlow<ProductoMasVendido?> = repo.observarProductoMasVendido()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val ventasPorMetodoPago: StateFlow<List<VentasPorMetodoPago>> = repo.observarVentasPorMetodoPago()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val pedidosPorHora: StateFlow<List<PedidosPorHora>> = repo.observarPedidosPorHora()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }

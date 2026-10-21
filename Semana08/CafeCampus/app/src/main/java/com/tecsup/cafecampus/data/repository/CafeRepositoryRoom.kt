@@ -1,8 +1,11 @@
 package com.tecsup.cafecampus.data.repository
 
 import com.tecsup.cafecampus.data.local.dao.PedidoDao
+import com.tecsup.cafecampus.data.local.dao.PedidosPorHora
 import com.tecsup.cafecampus.data.local.dao.ProductoDao
+import com.tecsup.cafecampus.data.local.dao.ProductoMasVendido
 import com.tecsup.cafecampus.data.local.dao.UsuarioDao
+import com.tecsup.cafecampus.data.local.dao.VentasPorMetodoPago
 import com.tecsup.cafecampus.data.local.entity.DetallePedido
 import com.tecsup.cafecampus.data.local.entity.Pedido
 import com.tecsup.cafecampus.data.local.entity.Producto
@@ -89,5 +92,17 @@ class CafeRepositoryRoom(
 
     override fun observarCantidadPorEstado(estado: EstadoPedido): Flow<Int> {
         return pedidoDao.cantidadPorEstado(estado.name)
+    }
+
+    override fun observarProductoMasVendido(): Flow<ProductoMasVendido?> {
+        return pedidoDao.productoMasVendido()
+    }
+
+    override fun observarVentasPorMetodoPago(): Flow<List<VentasPorMetodoPago>> {
+        return pedidoDao.ventasPorMetodoPago()
+    }
+
+    override fun observarPedidosPorHora(): Flow<List<PedidosPorHora>> {
+        return pedidoDao.pedidosPorHora()
     }
 }

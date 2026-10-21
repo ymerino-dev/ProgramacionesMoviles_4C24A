@@ -8,6 +8,23 @@ import com.tecsup.cafecampus.data.local.entity.Pedido
 import com.tecsup.cafecampus.data.local.relation.PedidoConDetalle
 import kotlinx.coroutines.flow.Flow
 
+// Modelos para reportes agregados
+data class ProductoMasVendido(
+    val nombreProducto: String,
+    val cantidadTotal: Int
+)
+
+data class VentasPorMetodoPago(
+    val pago: String,
+    val total: Double,
+    val cantidadPedidos: Int
+)
+
+data class PedidosPorHora(
+    val hora: String,
+    val cantidad: Int
+)
+
 @Dao
 abstract class PedidoDao {
     // --- 1. ESCRITURA (suspend) ---
@@ -50,4 +67,14 @@ abstract class PedidoDao {
 
     @Query("SELECT COUNT(*) FROM pedidos WHERE estado = :estado")
     abstract fun cantidadPorEstado(estado: String): Flow<Int>
+
+    // --- 5. REPORTES Y ESTADÍSTICAS ---
+    @Query("SELECT d.nombreProducto AS nombreProducto, SUM(d.cantidad) AS cantidadTotal FROM detalle_pedido d INNER JOIN pedidos p ON d.pedidoId = p.id WHERE p.estado != 'CANCELADO' GROUP BY d.productoId, d.nombreProducto ORDER BY cantidadTotal DESC LIMIT 1")
+    abstract fun productoMasVendido(): Flow<ProductoMasVendido?>
+
+    @Query("SELECT pago, SUM(total) AS total, COUNT(*) AS cantidadPedidos FROM pedidos WHERE estado != 'CANCELADO' GROUP BY pago")
+    abstract fun ventasPorMetodoPago(): Flow<List<VentasPorMetodoPago>>
+
+    @Query("SELECT horaRecojo AS hora, COUNT(*) AS cantidad FROM pedidos WHERE estado != 'CANCELADO' GROUP BY horaRecojo")
+    abstract fun pedidosPorHora(): Flow<List<PedidosPorHora>>
 }
