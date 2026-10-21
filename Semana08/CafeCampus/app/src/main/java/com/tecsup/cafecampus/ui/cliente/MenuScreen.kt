@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,20 +40,13 @@ fun MenuScreen(
     onIrMisPedidos: () -> Unit,
     onIrPerfil: () -> Unit
 ) {
-    val productos by vm.productos.collectAsState()
+    val productosFiltrados by vm.productosFiltrados.collectAsState()
+    val textoBusqueda by vm.searchQuery.collectAsState()
+    val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
     val carrito by vm.carrito.collectAsState()
-
-    var textoBusqueda by remember { mutableStateOf("") }
-    var categoriaSeleccionada by remember { mutableStateOf("Todo") }
 
     val cantidadCarrito = carrito.sumOf { it.cantidad }
     val colorNaranja = Color(0xFFEA580C)
-
-    val productosFiltrados = productos.filter { p ->
-        val coincideCategoria = categoriaSeleccionada == "Todo" || p.categoria.equals(categoriaSeleccionada, ignoreCase = true)
-        val coincideBusqueda = p.nombre.contains(textoBusqueda, ignoreCase = true)
-        coincideCategoria && coincideBusqueda
-    }
 
     Scaffold(
         topBar = {
@@ -106,13 +102,24 @@ fun MenuScreen(
 
             OutlinedTextField(
                 value = textoBusqueda,
-                onValueChange = { textoBusqueda = it },
+                onValueChange = { vm.onSearchQueryChange(it) },
                 placeholder = { Text("Buscar en el menú...", color = Color.Gray) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.Gray)
+                },
+                trailingIcon = {
+                    if (textoBusqueda.isNotEmpty()) {
+                        IconButton(onClick = { vm.onSearchQueryChange("") }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = Color.Gray)
+                        }
+                    }
+                },
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFE2E8F0),
                     focusedBorderColor = colorNaranja
                 ),
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -126,7 +133,7 @@ fun MenuScreen(
                 categorias.forEach { cat ->
                     val seleccionado = categoriaSeleccionada == cat
                     Button(
-                        onClick = { categoriaSeleccionada = cat },
+                        onClick = { vm.onCategoriaChange(cat) },
                         shape = RoundedCornerShape(20.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -142,6 +149,40 @@ fun MenuScreen(
             Spacer(modifier = Modifier.height(20.dp))
             Text("Populares hoy", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
             Spacer(modifier = Modifier.height(12.dp))
+
+            if (productosFiltrados.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.SearchOff,
+                            contentDescription = "Sin resultados",
+                            tint = Color.LightGray,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "No se encontraron productos",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Prueba buscando con otro término o categoría",
+                            color = Color.LightGray,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            } else {
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -209,4 +250,5 @@ fun MenuScreen(
             }
         }
     }
+}
 }
