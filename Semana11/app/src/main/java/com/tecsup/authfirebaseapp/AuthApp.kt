@@ -1,20 +1,23 @@
-package com.tecsup.authfirebaseapp
+package com.tecsup.authfirebaseapp.ui
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tecsup.authfirebaseapp.HomeScreen
+import com.tecsup.authfirebaseapp.LoginScreen
+import com.tecsup.authfirebaseapp.RegisterScreen
 
 object Destinations {
     const val LOGIN = "login"
     const val REGISTER = "register"
-    const val HOME = "home" //[cite: 13]
+    const val HOME = "home"
 }
 
 @Composable
 fun AuthApp() {
-    val navController = rememberNavController() //[cite: 13]
+    val navController = rememberNavController()
     AuthNavGraph(navController)
 }
 
@@ -22,7 +25,7 @@ fun AuthApp() {
 fun AuthNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Destinations.LOGIN //[cite: 13]
+        startDestination = Destinations.LOGIN
     ) {
         composable(Destinations.LOGIN) {
             LoginScreen(
@@ -31,7 +34,7 @@ fun AuthNavGraph(navController: NavHostController) {
                 },
                 onLoginSuccess = {
                     navController.navigate(Destinations.HOME) {
-                        popUpTo(Destinations.LOGIN) { inclusive = true } //[cite: 13]
+                        popUpTo(Destinations.LOGIN) { inclusive = true }
                     }
                 }
             )
@@ -40,11 +43,11 @@ fun AuthNavGraph(navController: NavHostController) {
             RegisterScreen(
                 onRegisterSuccess = {
                     navController.navigate(Destinations.HOME) {
-                        popUpTo(Destinations.LOGIN) { inclusive = true } //[cite: 13]
+                        popUpTo(Destinations.LOGIN) { inclusive = true }
                     }
                 },
                 onNavigateBack = {
-                    navController.popBackStack() //[cite: 13]
+                    navController.popBackStack()
                 }
             )
         }
@@ -52,7 +55,7 @@ fun AuthNavGraph(navController: NavHostController) {
             HomeScreen(
                 onLogout = {
                     navController.navigate(Destinations.LOGIN) {
-                        popUpTo(Destinations.HOME) { inclusive = true } //[cite: 13]
+                        popUpTo(Destinations.HOME) { inclusive = true }
                     }
                 }
             )

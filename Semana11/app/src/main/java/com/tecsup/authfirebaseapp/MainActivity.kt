@@ -4,16 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.google.firebase.FirebaseApp
+import com.tecsup.authfirebaseapp.ui.AuthApp
+import com.tecsup.authfirebaseapp.ui.theme.AuthFirebaseAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializa Firebase[cite: 14]
+        // Inicializa Firebase con el contexto de la aplicación
         FirebaseApp.initializeApp(this)
 
         setContent {
-            AuthApp() // Llamamos a nuestra app con navegación[cite: 14]
+            AuthFirebaseAppTheme {
+                AuthApp()
+            }
         }
     }
 }
