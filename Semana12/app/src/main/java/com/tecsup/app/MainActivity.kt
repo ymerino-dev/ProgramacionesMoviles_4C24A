@@ -3,45 +3,34 @@ package com.tecsup.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.tecsup.app.ui.theme.LabintegradorMerinoTheme
+import com.tecsup.app.ui.navigation.AppNav
+import com.tecsup.app.ui.theme.CatalogoTheme // (O el tema visual que tenga tu proyecto)
 
 class MainActivity : ComponentActivity() {
+
+    // Inicializamos nuestro contenedor manual de dependencias
+    private lateinit var appContainer: AppContainer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // Creamos la instancia pasándole el contexto
+        appContainer = AppContainer(applicationContext)
+
         setContent {
-            LabintegradorMerinoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            CatalogoTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // Llamamos a nuestra navegación principal inyectándole el container
+                    AppNav(container = appContainer)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LabintegradorMerinoTheme {
-        Greeting("Android")
     }
 }
