@@ -1,18 +1,16 @@
 package com.tecsup.app.data.remote
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
+    // Reemplaza con tu URL base o la de tu API del laboratorio
     private const val BASE_URL = "https://fakestoreapi.com/"
 
-    val instance: ApiService by lazy {
-        val json = Json { ignoreUnknownKeys = true }
+    val apiService: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
     }
