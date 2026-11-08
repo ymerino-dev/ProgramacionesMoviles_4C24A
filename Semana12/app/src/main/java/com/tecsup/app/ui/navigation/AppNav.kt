@@ -1,6 +1,8 @@
 package com.tecsup.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,8 +17,14 @@ fun AppNav(container: AppContainer) {
 
     NavHost(navController = navController, startDestination = "lista") {
         composable("lista") {
-            // Creamos el ViewModel inyectándole el repositorio de nuestro AppContainer
-            val viewModel: ListaViewModel = ListaViewModel(container.itemRepository)
+            // Creamos el ViewModel usando un Factory para inyectar el repositorio correctamente
+            val viewModel: ListaViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ListaViewModel(container.itemRepository) as T
+                    }
+                }
+            )
             ListaScreen(viewModel = viewModel)
         }
     }
