@@ -8,7 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.tecsup.app.ui.navigation.AppNav
-import com.tecsup.app.ui.theme.CatalogoTheme // (O el tema visual que tenga tu proyecto)
+import com.tecsup.app.ui.theme.LabintegradorMerinoTheme
+
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
         appContainer = AppContainer(applicationContext)
 
         setContent {
-            CatalogoTheme {
+            LabintegradorMerinoTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
