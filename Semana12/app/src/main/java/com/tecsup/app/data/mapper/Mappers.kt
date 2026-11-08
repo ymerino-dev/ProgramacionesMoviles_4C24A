@@ -6,11 +6,11 @@ import com.tecsup.app.domain.model.Item
 
 fun ItemDto.toEntity(): ItemEntity = ItemEntity(
     id = id,
-    title = title,
+    title = titulo,        // <--- Mapeado desde 'titulo'
     price = price,
-    description = description,
+    description = descripcion, // <--- Mapeado desde 'descripcion'
     category = category,
-    image = image
+    image = imagenUrl      // <--- Mapeado desde 'imagenUrl'
 )
 
 fun ItemEntity.toDomain(): Item = Item(
@@ -24,9 +24,9 @@ fun ItemEntity.toDomain(): Item = Item(
 
 fun ItemDto.toDomain(): Item = Item(
     id = id,
-    title = title,
+    title = titulo,        // <--- Mapeado desde 'titulo'
     price = price,
-    description = description,
+    description = descripcion, // <--- Mapeado desde 'descripcion'
     category = category,
-    image = image
+    image = imagenUrl      // <--- Mapeado desde 'imagenUrl'
 )
