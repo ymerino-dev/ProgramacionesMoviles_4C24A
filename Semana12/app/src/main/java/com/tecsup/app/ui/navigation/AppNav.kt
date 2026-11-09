@@ -49,5 +49,19 @@ fun AppNav(container: AppContainer) {
             )
             ListaScreen(viewModel = viewModel)
         }
+
+        composable("detalle/{itemId}") { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getString("itemId")?.toIntOrNull() ?: 0
+            val viewModel: DetalleViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return DetalleViewModel(itemId, container.itemRepository) as T
+                    }
+                }
+            )
+            val state by viewModel.uiState.collectAsState()
+
+            // Aquí llamas a tu DetalleScreen pasando el estado correspondiente
+        }
     }
 }
