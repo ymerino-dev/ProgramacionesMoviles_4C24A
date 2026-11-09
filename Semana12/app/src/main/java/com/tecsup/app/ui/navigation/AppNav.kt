@@ -61,7 +61,26 @@ fun AppNav(container: AppContainer) {
             )
             val state by viewModel.uiState.collectAsState()
 
-            // Aquí llamas a tu DetalleScreen pasando el estado correspondiente
+            when (val currentState = state) {
+                is UiState.Cargando -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is UiState.Exito -> {
+                    DetalleScreen(
+                        item = currentState.datos,
+                        isFavorite = false,
+                        onToggleFavorite = { viewModel.alternarFavorito() },
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+                is UiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        Text(text = currentState.mensaje)
+                    }
+                }
+            }
         }
     }
 }

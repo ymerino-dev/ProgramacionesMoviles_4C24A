@@ -2,10 +2,12 @@ package com.tecsup.app.ui.detalle
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
-import com.tecsup.app.domain.repository.ItemRepository
 import com.tecsup.app.ui.UiState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class DetalleViewModel(
@@ -32,7 +34,7 @@ class DetalleViewModel(
         }
     }
 
-    fun alternarFavorito(itemId: Int) {
+    fun alternarFavorito() {
         viewModelScope.launch {
             repository.alternarFavorito(itemId)
         }
