@@ -3,21 +3,19 @@ package com.tecsup.app.ui.lista
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.tecsup.app.domain.model.Item
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaScreen(
-    viewModel: ListaViewModel
+    viewModel: ListaViewModel,
+    onItemClick: (Int) -> Unit // <-- Añadido aquí para recibir la navegación
 ) {
     val items by viewModel.items.collectAsState()
 
@@ -60,6 +58,7 @@ fun ListaScreen(
                 ) {
                     items(items) { item ->
                         Card(
+                            onClick = { onItemClick(item.id) }, // <-- Navega al detalle con el ID
                             modifier = Modifier.fillMaxWidth(),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
