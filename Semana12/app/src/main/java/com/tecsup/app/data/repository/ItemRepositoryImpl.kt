@@ -1,7 +1,7 @@
 package com.tecsup.app.data.repository
 
 import com.tecsup.app.data.local.ItemDao
-import com.tecsup.app.data.mapper.*
+import com.tecsup.app.data.local.ItemEntity
 import com.tecsup.app.data.remote.ApiService
 import com.tecsup.app.domain.model.Item
 import kotlinx.coroutines.flow.Flow
@@ -12,17 +12,37 @@ class ItemRepositoryImpl(
     private val itemDao: ItemDao
 ) : ItemRepository {
 
-    override val items: Flow<List<Item>> = itemDao.obtenerItems().map { entities ->
-        entities.map { it.toDomain() }
+    // 1. Mapeo de Room (Entity) hacia el modelo de la UI (Item)
+    override val items: Flow<List<Item>> = itemDao.obtenerItems().map { entityList ->
+        entityList.map { entity ->
+            Item(
+                id = entity.id,
+                title = entity.title,
+                price = entity.price,
+                description = entity.description,
+                category = entity.category,
+                image = entity.image
+            )
+        }
     }
 
+    // 2. Mapeo correcto usando las variables de tu ItemDto (titulo, descripcion, imagenUrl)
     override suspend fun refreshItems() {
         try {
-            val remoteDtos = apiService.getItems()
-            val entities = remoteDtos.map { it.toEntity() }
-            itemDao.insertarItems(entities)
+            val remoteProducts = apiService.getItems()
+            val entityList = remoteProducts.map { dto ->
+                ItemEntity(
+                    id = dto.id,
+                    title = dto.titulo,          // <--- Mapeado a dto.titulo
+                    price = dto.price,
+                    description = dto.descripcion, // <--- Mapeado a dto.descripcion
+                    category = dto.category,
+                    image = dto.imagenUrl        // <--- Mapeado a dto.imagenUrl
+                )
+            }
+            itemDao.insertarItems(entityList)
         } catch (e: Exception) {
-            // Si no hay red, la app se mantiene con los datos locales de Room
+            e.printStackTrace()
         }
     }
 }
