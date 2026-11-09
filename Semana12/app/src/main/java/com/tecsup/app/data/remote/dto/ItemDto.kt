@@ -1,4 +1,3 @@
-
 package com.tecsup.app.data.remote.dto
 
 import kotlinx.serialization.SerialName
@@ -15,7 +14,7 @@ data class ItemDto(
     val descripcion: String,
 
     @SerialName("thumbnail")
-    val imagenUrl: String,
+    val imagenUrl: String = "", // <--- Añadimos valor por defecto para que no falle si falta
 
     val price: Double,
 

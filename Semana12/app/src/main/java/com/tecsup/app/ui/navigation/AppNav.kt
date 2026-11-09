@@ -10,14 +10,36 @@ import androidx.navigation.compose.rememberNavController
 import com.tecsup.app.AppContainer
 import com.tecsup.app.ui.lista.ListaScreen
 import com.tecsup.app.ui.lista.ListaViewModel
+import com.tecsup.app.ui.login.LoginScreen
+import com.tecsup.app.ui.login.LoginViewModel
 
 @Composable
 fun AppNav(container: AppContainer) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "lista") {
+    NavHost(navController = navController, startDestination = "login") {
+
+        // Ruta de Inicio de Sesión
+        composable("login") {
+            val viewModel: LoginViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return LoginViewModel(container.authRepository) as T
+                    }
+                }
+            )
+            LoginScreen(
+                viewModel = viewModel,
+                onLoginSuccess = {
+                    navController.navigate("lista") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Ruta del Catálogo de Productos
         composable("lista") {
-            // Creamos el ViewModel usando un Factory para inyectar el repositorio correctamente
             val viewModel: ListaViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {

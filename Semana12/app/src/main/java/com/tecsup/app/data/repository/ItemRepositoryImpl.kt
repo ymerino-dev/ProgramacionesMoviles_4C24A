@@ -33,16 +33,18 @@ class ItemRepositoryImpl(
             val entityList = remoteProducts.map { dto ->
                 ItemEntity(
                     id = dto.id,
-                    title = dto.titulo,          // <--- Mapeado a dto.titulo
+                    title = dto.titulo,
                     price = dto.price,
-                    description = dto.descripcion, // <--- Mapeado a dto.descripcion
+                    description = dto.descripcion,
                     category = dto.category,
-                    image = dto.imagenUrl        // <--- Mapeado a dto.imagenUrl
+                    image = dto.imagenUrl
                 )
             }
             itemDao.insertarItems(entityList)
         } catch (e: Exception) {
+            // AQUÍ IMPRIMIMOS EL ERROR REAL EN EL LOGCAT
             e.printStackTrace()
+            println("ERROR_API_DEBUG: ${e.message}")
         }
     }
 }
