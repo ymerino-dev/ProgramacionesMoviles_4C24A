@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
-    kotlin("plugin.serialization") version "2.2.10"
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -69,9 +69,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Room
-    implementation("androidx.room:room-runtime:2.8.5")
-    implementation("androidx.room:room-ktx:2.8.5")
-    ksp("androidx.room:room-compiler:2.8.5")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     // Lifecycle y navegación
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
