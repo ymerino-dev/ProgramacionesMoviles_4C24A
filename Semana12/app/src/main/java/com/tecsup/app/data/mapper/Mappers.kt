@@ -4,29 +4,21 @@ import com.tecsup.app.data.local.ItemEntity
 import com.tecsup.app.data.remote.dto.ItemDto
 import com.tecsup.app.domain.model.Item
 
-fun ItemDto.toEntity(): ItemEntity = ItemEntity(
+fun ItemDto.toEntity(esFavorito: Boolean = false): ItemEntity = ItemEntity(
     id = id,
-    title = titulo,        // <--- Mapeado desde 'titulo'
+    title = titulo,        // Apunta a la propiedad 'titulo' de tu ItemDto
+    description = descripcion, // Apunta a la propiedad 'descripcion' de tu ItemDto
     price = price,
-    description = descripcion, // <--- Mapeado desde 'descripcion'
     category = category,
-    image = imagenUrl      // <--- Mapeado desde 'imagenUrl'
+    image = imagenUrl,     // Apunta a la propiedad 'imagenUrl' (o thumbnail) de tu ItemDto
+    esFavorito = esFavorito
 )
 
 fun ItemEntity.toDomain(): Item = Item(
     id = id,
     title = title,
-    price = price,
     description = description,
+    price = price,
     category = category,
     image = image
-)
-
-fun ItemDto.toDomain(): Item = Item(
-    id = id,
-    title = titulo,        // <--- Mapeado desde 'titulo'
-    price = price,
-    description = descripcion, // <--- Mapeado desde 'descripcion'
-    category = category,
-    image = imagenUrl      // <--- Mapeado desde 'imagenUrl'
 )
