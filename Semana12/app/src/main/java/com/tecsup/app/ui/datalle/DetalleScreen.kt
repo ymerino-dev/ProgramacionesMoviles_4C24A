@@ -44,12 +44,12 @@ fun DetalleScreen(
             if (item != null) {
                 FloatingActionButton(
                     onClick = onToggleFavorite,
-                    containerColor = if (isFavorite) MaterialScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (isFavorite) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorito",
-                        tint = if (isFavorite) MaterialScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
