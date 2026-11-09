@@ -7,8 +7,9 @@ import androidx.room.PrimaryKey
 data class ItemEntity(
     @PrimaryKey val id: Int,
     val title: String,
-    val price: Double,
     val description: String,
+    val price: Double,
     val category: String,
-    val image: String
+    val image: String,
+    val esFavorito: Boolean
 )

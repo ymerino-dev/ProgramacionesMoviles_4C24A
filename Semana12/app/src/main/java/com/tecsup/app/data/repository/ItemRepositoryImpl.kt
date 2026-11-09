@@ -46,12 +46,12 @@ class ItemRepositoryImpl(
         val nuevos = response.productos.map { dto ->
             ItemEntity(
                 id = dto.id,
-                title = dto.titulo,          // Mapeando desde el DTO hacia la Entity
+                title = dto.titulo,         // Mapeado desde el DTO
                 description = dto.descripcion,
                 price = dto.price,
                 category = dto.category,
                 image = dto.imagenUrl,
-                isFavorite = dto.id in favoritosIds
+                esFavorito = dto.id in favoritosIds
             )
         }
         itemDao.guardarTodos(items = nuevos)
@@ -61,7 +61,6 @@ class ItemRepositoryImpl(
     } catch (e: HttpException) {
         Result.failure(exception = e)
     }
-
     override suspend fun obtenerDetalle(id: Int): Result<Item> = try {
         val dto = apiService.obtenerDetalleProducto(id)
         val item = Item(
