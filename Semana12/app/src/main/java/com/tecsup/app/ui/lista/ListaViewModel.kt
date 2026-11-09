@@ -28,7 +28,7 @@ class ListaViewModel(
 
     fun cargarProductos() {
         viewModelScope.launch {
-            itemRepository.refreshItems()
+            itemRepository.refrescar()
         }
     }
 }
