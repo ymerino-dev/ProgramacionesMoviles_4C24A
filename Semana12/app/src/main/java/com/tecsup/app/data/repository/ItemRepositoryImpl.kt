@@ -18,11 +18,11 @@ class ItemRepositoryImpl(
         entityList.map { entity ->
             Item(
                 id = entity.id,
-                title = entity.titulo,
-                description = entity.subtitulo,
-                price = 0.0,
-                category = "General",
-                image = entity.imagenUrl
+                title = entity.title,         // Usando el nombre correcto de tu Entity
+                description = entity.description,
+                price = entity.price,
+                category = entity.category,
+                image = entity.image
             )
         }
     }
@@ -31,25 +31,27 @@ class ItemRepositoryImpl(
         entityList.map { entity ->
             Item(
                 id = entity.id,
-                title = entity.titulo,
-                description = entity.subtitulo,
-                price = 0.0,
-                category = "General",
-                image = entity.imagenUrl
+                title = entity.title,
+                description = entity.description,
+                price = entity.price,
+                category = entity.category,
+                image = entity.image
             )
         }
     }
 
     override suspend fun refrescar(): Result<Int> = try {
         val favoritosIds = itemDao.idsFavoritos().toSet()
-        val response = apiService.obtenerProductos() // Ahora devuelve ItemResponseDto
+        val response = apiService.obtenerProductos()
         val nuevos = response.productos.map { dto ->
             ItemEntity(
                 id = dto.id,
-                titulo = dto.titulo,
-                subtitulo = dto.descripcion,
-                imagenUrl = dto.imagenUrl,
-                esFavorito = dto.id in favoritosIds
+                title = dto.titulo,          // Mapeando desde el DTO hacia la Entity
+                description = dto.descripcion,
+                price = dto.price,
+                category = dto.category,
+                image = dto.imagenUrl,
+                isFavorite = dto.id in favoritosIds
             )
         }
         itemDao.guardarTodos(items = nuevos)
@@ -64,15 +66,15 @@ class ItemRepositoryImpl(
         val dto = apiService.obtenerDetalleProducto(id)
         val item = Item(
             id = dto.id,
-            title = dto.title,
-            description = dto.description,
+            title = dto.titulo,
+            description = dto.descripcion,
             price = dto.price,
             category = dto.category,
-            image = dto.thumbnail
+            image = dto.imagenUrl
         )
-        Result.success(item)
+        Result.success(value = item)
     } catch (e: Exception) {
-        Result.failure(e)
+        Result.failure(exception = e)
     }
 
     override suspend fun alternarFavorito(id: Int) {
