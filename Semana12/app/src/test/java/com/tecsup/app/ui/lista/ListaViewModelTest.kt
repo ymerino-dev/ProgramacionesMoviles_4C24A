@@ -2,19 +2,21 @@ package com.tecsup.app.ui.lista
 
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
+import com.tecsup.app.ui.UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ListaViewModelTest {
@@ -45,13 +47,12 @@ class ListaViewModelTest {
 
         // When
         viewModel = ListaViewModel(fakeRepository)
-        backgroundScope.launch {
-            viewModel.items.collect {}
-        }
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
-        assertEquals(sampleItems, viewModel.items.value)
+        val estado = viewModel.estado.value
+        assertTrue(estado is UiState.Exito)
+        assertEquals(sampleItems, (estado as UiState.Exito).datos)
     }
 
     @Test
@@ -59,9 +60,6 @@ class ListaViewModelTest {
         // Given
         fakeRepository.resetCallCount()
         viewModel = ListaViewModel(fakeRepository)
-        backgroundScope.launch {
-            viewModel.items.collect {}
-        }
         testDispatcher.scheduler.advanceUntilIdle()
         
         val initialCount = fakeRepository.refreshCallCount
@@ -75,19 +73,18 @@ class ListaViewModelTest {
     }
 
     @Test
-    fun testRepositoryEmptyItemsEmitsEmptyList() = runTest {
+    fun testRepositoryEmptyItemsEmitsErrorWhenOffline() = runTest {
         // Given
         fakeRepository.setInitialItems(emptyList())
+        fakeRepository.shouldFail = true
 
         // When
         viewModel = ListaViewModel(fakeRepository)
-        backgroundScope.launch {
-            viewModel.items.collect {}
-        }
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
-        assertEquals(emptyList<Item>(), viewModel.items.value)
+        val estado = viewModel.estado.value
+        assertTrue(estado is UiState.Error)
     }
 
     private class FakeItemRepository : ItemRepository {
@@ -97,6 +94,7 @@ class ListaViewModelTest {
         override val favoritos: Flow<List<Item>> = _favoritos
 
         var refreshCallCount = 0
+        var shouldFail = false
         private var itemsToReturn: List<Item> = emptyList()
 
         fun setInitialItems(list: List<Item>) {
@@ -106,10 +104,14 @@ class ListaViewModelTest {
 
         fun resetCallCount() {
             refreshCallCount = 0
+            shouldFail = false
         }
 
         override suspend fun refrescar(): Result<Int> {
             refreshCallCount++
+            if (shouldFail) {
+                return Result.failure(IOException("Network error"))
+            }
             _items.value = itemsToReturn
             return Result.success(itemsToReturn.size)
         }
