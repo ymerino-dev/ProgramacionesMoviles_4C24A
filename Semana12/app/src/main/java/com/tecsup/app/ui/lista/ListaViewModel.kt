@@ -6,8 +6,10 @@ import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
 import com.tecsup.app.ui.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.IOException
 import retrofit2.HttpException
@@ -21,6 +23,14 @@ class ListaViewModel(
 
     private val _aviso = MutableStateFlow<String?>(null)
     val aviso: StateFlow<String?> = _aviso.asStateFlow()
+
+    // Exponemos la lista de favoritos directamente desde el repositorio como StateFlow para la UI
+    val favoritos: StateFlow<List<Item>> = itemRepository.favoritos
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     private var refrescoTerminado = false
 
@@ -69,6 +79,17 @@ class ListaViewModel(
                 } else {
                     _aviso.value = "Sin conexión: mostrando datos guardados"
                 }
+            }
+        }
+    }
+
+    // Función para alternar el estado de favorito de un producto desde la UI
+    fun alternarFavorito(id: Int) {
+        viewModelScope.launch {
+            try {
+                itemRepository.alternarFavorito(id)
+            } catch (e: Exception) {
+                println("ListaViewModel Error al alternar favorito: ${e.message}")
             }
         }
     }
