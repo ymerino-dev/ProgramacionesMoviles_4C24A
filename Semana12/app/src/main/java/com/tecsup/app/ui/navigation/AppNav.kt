@@ -186,7 +186,10 @@ fun AppNav(container: AppContainer) {
                 totalFavoritos = totalFavoritos,
                 onSincronizar = { viewModel.sincronizar() },
                 onLimpiarCache = { viewModel.limpiarCache() },
-                onBackClick = {
+                onAgregarProducto = { title, price, category, desc, img ->
+                    viewModel.agregarProducto(title, price, category, desc, img)
+                },
+                onLogoutClick = {
                     container.authRepository.cerrarSesion()
                     navController.navigate("login") {
                         popUpTo("admin") { inclusive = true }

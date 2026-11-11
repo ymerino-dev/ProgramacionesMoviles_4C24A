@@ -21,7 +21,7 @@ class ItemRepositoryImpl(
                 description = entity.description,
                 category = entity.category,
                 image = entity.image,
-                esFavorito = entity.esFavorito // <--- Mapeo correcto
+                esFavorito = entity.esFavorito
             )
         }
     }
@@ -35,7 +35,7 @@ class ItemRepositoryImpl(
                 description = entity.description,
                 category = entity.category,
                 image = entity.image,
-                esFavorito = entity.esFavorito // <--- Mapeo correcto para favoritos
+                esFavorito = entity.esFavorito
             )
         }
     }
@@ -82,6 +82,30 @@ class ItemRepositoryImpl(
 
     override suspend fun quitarTodosFavoritos() {
         itemDao.quitarTodosFavoritos()
+    }
+
+    override suspend fun agregarProducto(
+        title: String,
+        price: Double,
+        category: String,
+        description: String,
+        image: String
+    ): Result<Boolean> = try {
+        val newId = (itemDao.contar() + 100) + (System.currentTimeMillis() % 10000).toInt()
+        val defaultImg = if (image.isBlank()) "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800" else image
+        val entity = ItemEntity(
+            id = newId,
+            title = title,
+            description = description,
+            price = price,
+            category = category,
+            image = defaultImg,
+            esFavorito = false
+        )
+        itemDao.guardarTodos(listOf(entity))
+        Result.success(true)
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 
     override suspend fun cantidadGuardada(): Int {

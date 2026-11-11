@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +29,7 @@ fun PerfilScreen(
     val currentUser = FirebaseAuth.getInstance().currentUser
     val email = currentUser?.email ?: "Usuario desconocido"
     val uid = currentUser?.uid ?: "UID no disponible"
+    var isDarkMode by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -36,7 +37,7 @@ fun PerfilScreen(
                 title = { Text("Mi Perfil", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -87,8 +88,22 @@ fun PerfilScreen(
 
                     HorizontalDivider()
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Modo Oscuro", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                        Switch(
+                            checked = isDarkMode,
+                            onCheckedChange = { isDarkMode = it }
+                        )
+                    }
+
+                    HorizontalDivider()
+
                     Text("UID de Firebase", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(uid, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    Text(uid, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                 }
             }
 

@@ -1,9 +1,12 @@
 package com.tecsup.app.ui.admin
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -13,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,12 +25,23 @@ fun AdminScreen(
     totalFavoritos: Int,
     onSincronizar: () -> Unit,
     onLimpiarCache: () -> Unit,
-    onBackClick: () -> Unit
+    onAgregarProducto: (String, Double, String, String, String) -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showAddProductDialog by remember { mutableStateOf(false) }
     var isSyncing by remember { mutableStateOf(false) }
+    var isDarkMode by remember { mutableStateOf(false) }
 
-    // Restablecer estado de sincronización cuando cambian los totales
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val adminEmail = currentUser?.email ?: "admin@tecsup.edu.pe"
+
+    var titleInput by remember { mutableStateOf("") }
+    var priceInput by remember { mutableStateOf("") }
+    var categoryInput by remember { mutableStateOf("Tecnología") }
+    var descInput by remember { mutableStateOf("") }
+    var imageInput by remember { mutableStateOf("") }
+
     LaunchedEffect(totalGuardados) {
         isSyncing = false
     }
@@ -54,6 +69,71 @@ fun AdminScreen(
         )
     }
 
+    if (showAddProductDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddProductDialog = false },
+            title = { Text("Agregar producto al catálogo", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = titleInput,
+                        onValueChange = { titleInput = it },
+                        label = { Text("Nombre del producto") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = priceInput,
+                        onValueChange = { priceInput = it },
+                        label = { Text("Precio ($)") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = categoryInput,
+                        onValueChange = { categoryInput = it },
+                        label = { Text("Categoría") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = descInput,
+                        onValueChange = { descInput = it },
+                        label = { Text("Descripción") }
+                    )
+                    OutlinedTextField(
+                        value = imageInput,
+                        onValueChange = { imageInput = it },
+                        label = { Text("URL de la imagen (opcional)") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val p = priceInput.toDoubleOrNull() ?: 0.0
+                        if (titleInput.isNotBlank()) {
+                            onAgregarProducto(titleInput, p, categoryInput, descInput, imageInput)
+                            titleInput = ""
+                            priceInput = ""
+                            descInput = ""
+                            imageInput = ""
+                            showAddProductDialog = false
+                        }
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddProductDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,9 +143,9 @@ fun AdminScreen(
                         Text("Administración de datos", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
+                actions = {
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -76,10 +156,39 @@ fun AdminScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Cuenta Administradora", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(adminEmail, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Modo Oscuro", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                        Switch(
+                            checked = isDarkMode,
+                            onCheckedChange = { isDarkMode = it }
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -115,7 +224,18 @@ fun AdminScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { showAddProductDialog = true },
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Agregar producto al catálogo", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
 
             Button(
                 onClick = {

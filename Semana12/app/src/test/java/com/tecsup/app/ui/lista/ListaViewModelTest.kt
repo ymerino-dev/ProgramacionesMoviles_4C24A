@@ -138,6 +138,16 @@ class ListaViewModelTest {
             _favoritos.value = emptyList()
         }
 
+        override suspend fun agregarProducto(
+            title: String,
+            price: Double,
+            category: String,
+            description: String,
+            image: String
+        ): Result<Boolean> {
+            return Result.success(true)
+        }
+
         override suspend fun cantidadGuardada(): Int = _items.value.size
 
         override suspend fun cantidadFavoritos(): Int = _favoritos.value.size

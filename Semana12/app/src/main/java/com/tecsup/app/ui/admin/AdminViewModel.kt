@@ -35,7 +35,19 @@ class AdminViewModel(
             val result = itemRepository.refrescar()
             actualizarTotales()
             result.onSuccess { n ->
-                notificador.mostrarNotificacion("Sincronización Exitosa", "Se guardaron $n elementos")
+                notificador.mostrarNotificacion("Datos actualizados", "Se guardaron $n productos")
+            }.onFailure { e ->
+                notificador.mostrarNotificacion("Error de Sincronización", e.message ?: "Falló la sincronización")
+            }
+        }
+    }
+
+    fun agregarProducto(title: String, price: Double, category: String, description: String, image: String) {
+        viewModelScope.launch {
+            val result = itemRepository.agregarProducto(title, price, category, description, image)
+            result.onSuccess {
+                actualizarTotales()
+                notificador.mostrarNotificacion("Producto Creado", "Se agregó '$title' al catálogo")
             }
         }
     }
@@ -44,6 +56,7 @@ class AdminViewModel(
         viewModelScope.launch {
             itemRepository.limpiarCache()
             actualizarTotales()
+            notificador.mostrarNotificacion("Caché Limpiada", "Se han borrado los productos locales")
         }
     }
 }

@@ -10,6 +10,7 @@ interface ItemRepository {
     suspend fun obtenerDetalle(id: Int): Result<Item>
     suspend fun alternarFavorito(id: Int)
     suspend fun quitarTodosFavoritos()
+    suspend fun agregarProducto(title: String, price: Double, category: String, description: String, image: String): Result<Boolean>
     suspend fun cantidadGuardada(): Int
     suspend fun cantidadFavoritos(): Int
     suspend fun limpiarCache()
