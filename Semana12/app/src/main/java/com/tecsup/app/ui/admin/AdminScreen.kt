@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ fun AdminScreen(
     onSincronizar: () -> Unit,
     onLimpiarCache: () -> Unit,
     onAgregarProducto: (String, Double, String, String, String) -> Unit,
+    onVerCatalogo: () -> Unit,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -224,6 +226,19 @@ fun AdminScreen(
                         Text(text = "$totalFavoritos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
+            }
+
+            Button(
+                onClick = onVerCatalogo,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+            ) {
+                Icon(Icons.Default.ShoppingCart, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ver Catálogo de Productos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
             Button(

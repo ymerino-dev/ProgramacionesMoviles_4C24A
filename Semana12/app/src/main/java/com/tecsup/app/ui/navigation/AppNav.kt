@@ -54,8 +54,14 @@ fun AppNav(
                 viewModel = viewModel,
                 onLoginSuccess = { sesion ->
                     userRole = sesion.rol
-                    navController.navigate("lista") {
-                        popUpTo("login") { inclusive = true }
+                    if (sesion.rol == Rol.ADMIN) {
+                        navController.navigate("admin") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("lista") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
                 }
             )
@@ -103,7 +109,7 @@ fun AppNav(
             val viewModel: DetalleViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return DetalleViewModel(itemId, container.itemRepository) as T
+                        return DetalleViewModel(itemId, container.itemRepository, container.notificador) as T
                     }
                 }
             )
@@ -169,7 +175,7 @@ fun AppNav(
             )
         }
 
-        // Ruta de Panel Admin
+        // Ruta de Panel Admin (Solo muestra el panel con opción a ver catálogo)
         composable("admin") {
             if (userRole == Rol.ADMIN) {
                 val viewModel: AdminViewModel = viewModel(
@@ -192,7 +198,15 @@ fun AppNav(
                     onAgregarProducto = { title, price, category, desc, img ->
                         viewModel.agregarProducto(title, price, category, desc, img)
                     },
-                    onBackClick = { navController.popBackStack() },
+                    onVerCatalogo = {
+                        navController.navigate("lista")
+                    },
+                    onBackClick = {
+                        container.authRepository.cerrarSesion()
+                        navController.navigate("login") {
+                            popUpTo("admin") { inclusive = true }
+                        }
+                    },
                     onLogoutClick = {
                         container.authRepository.cerrarSesion()
                         navController.navigate("login") {

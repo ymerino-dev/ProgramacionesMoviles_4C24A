@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
+import com.tecsup.app.notification.Notificador
 import com.tecsup.app.ui.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,8 @@ import kotlinx.coroutines.launch
 
 class DetalleViewModel(
     private val itemId: Int,
-    private val repository: ItemRepository
+    private val repository: ItemRepository,
+    private val notificador: Notificador
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<Item>>(UiState.Cargando)
@@ -37,6 +39,17 @@ class DetalleViewModel(
     fun alternarFavorito() {
         viewModelScope.launch {
             repository.alternarFavorito(itemId)
+            val currentState = _uiState.value
+            if (currentState is UiState.Exito) {
+                val item = currentState.datos
+                val nuevoEstado = !item.esFavorito
+                _uiState.value = UiState.Exito(item.copy(esFavorito = nuevoEstado))
+                if (nuevoEstado) {
+                    notificador.mostrarNotificacion("Producto Favorito", "Se agregó '${item.title}' a tus favoritos desde el detalle")
+                } else {
+                    notificador.mostrarNotificacion("Producto Favorito", "Se eliminó '${item.title}' de tus favoritos")
+                }
+            }
         }
     }
 }
