@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
 import com.tecsup.app.ui.UiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import retrofit2.HttpException
 
@@ -25,11 +27,17 @@ class ListaViewModel(
     private var refrescoTerminado = false
 
     init {
-        viewModelScope.launch {
-            itemRepository.items.collect { lista ->
-                if (lista.isNotEmpty() || refrescoTerminado) {
-                    _estado.value = UiState.Exito(lista)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                itemRepository.items.collect { lista ->
+                    withContext(Dispatchers.Main) {
+                        if (lista.isNotEmpty()) {
+                            _estado.value = UiState.Exito(lista)
+                        }
+                    }
                 }
+            } catch (e: Exception) {
+                println("ListaViewModel Error al recolectar items de Room: ${e.message}")
             }
         }
         cargarProductos()
@@ -37,12 +45,25 @@ class ListaViewModel(
 
     fun cargarProductos() {
         _aviso.value = null
+        _estado.value = UiState.Cargando
         viewModelScope.launch {
-            val resultado = itemRepository.refrescar()
-            refrescoTerminado = true
-            resultado.onSuccess {
-                _aviso.value = null
-            }.onFailure { e ->
+            try {
+                val resultado = itemRepository.refrescar()
+                refrescoTerminado = true
+                resultado.onSuccess {
+                    _aviso.value = null
+                }.onFailure { e ->
+                    println("ListaViewModel Refrescar Failure: ${e.message}")
+                    val cantidad = itemRepository.cantidadGuardada()
+                    if (cantidad == 0) {
+                        _estado.value = UiState.Error(mensajeDe(e))
+                    } else {
+                        _aviso.value = "Sin conexión: mostrando datos guardados"
+                    }
+                }
+            } catch (e: Exception) {
+                println("ListaViewModel Exception: ${e.message}")
+                refrescoTerminado = true
                 val cantidad = itemRepository.cantidadGuardada()
                 if (cantidad == 0) {
                     _estado.value = UiState.Error(mensajeDe(e))
