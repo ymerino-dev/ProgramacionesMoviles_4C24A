@@ -7,7 +7,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +28,9 @@ fun PerfilScreen(
     userRole: Rol,
     isDarkTheme: Boolean,
     onToggleDarkTheme: () -> Unit,
+    onHomeClick: () -> Unit = {},
+    onFavoritosClick: () -> Unit = {},
+    onAdminClick: () -> Unit = {},
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -43,6 +49,38 @@ fun PerfilScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = onHomeClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Favoritos") },
+                    label = { Text("Favoritos") },
+                    selected = false,
+                    onClick = onFavoritosClick
+                )
+                if (userRole == Rol.ADMIN) {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Panel") },
+                        label = { Text("Panel") },
+                        selected = false,
+                        onClick = onAdminClick
+                    )
+                }
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = { }
+                )
+            }
         }
     ) { paddingValues ->
         Column(

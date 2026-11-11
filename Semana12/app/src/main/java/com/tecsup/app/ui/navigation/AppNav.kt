@@ -148,10 +148,14 @@ fun AppNav(
             )
             FavoritosScreen(
                 viewModel = viewModel,
+                userRole = userRole,
                 onHomeClick = {
                     navController.navigate("lista") {
                         popUpTo("lista") { inclusive = true }
                     }
+                },
+                onAdminClick = {
+                    navController.navigate("admin")
                 },
                 onProfileClick = {
                     navController.navigate("perfil")
@@ -165,6 +169,17 @@ fun AppNav(
                 userRole = userRole,
                 isDarkTheme = isDarkTheme,
                 onToggleDarkTheme = onToggleDarkTheme,
+                onHomeClick = {
+                    navController.navigate("lista") {
+                        popUpTo("lista") { inclusive = true }
+                    }
+                },
+                onFavoritosClick = {
+                    navController.navigate("favoritos")
+                },
+                onAdminClick = {
+                    navController.navigate("admin")
+                },
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
                     container.authRepository.cerrarSesion()
@@ -191,6 +206,8 @@ fun AppNav(
                 AdminScreen(
                     totalGuardados = totalGuardados,
                     totalFavoritos = totalFavoritos,
+                    isDarkTheme = isDarkTheme,
+                    onToggleDarkTheme = onToggleDarkTheme,
                     onSincronizar = { viewModel.sincronizar() },
                     onLimpiarCache = { viewModel.limpiarCache() },
                     onAgregarProducto = { title, price, category, desc, img ->

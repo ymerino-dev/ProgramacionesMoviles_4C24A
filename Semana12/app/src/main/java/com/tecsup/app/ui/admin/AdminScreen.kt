@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 fun AdminScreen(
     totalGuardados: Int,
     totalFavoritos: Int,
+    isDarkTheme: Boolean = false,
+    onToggleDarkTheme: () -> Unit = {},
     onSincronizar: () -> Unit,
     onLimpiarCache: () -> Unit,
     onAgregarProducto: (String, Double, String, String, String) -> Unit,
