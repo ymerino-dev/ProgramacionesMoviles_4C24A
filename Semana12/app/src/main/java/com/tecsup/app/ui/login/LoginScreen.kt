@@ -30,8 +30,10 @@ fun LoginScreen(
         loginState?.let { result ->
             result.onSuccess { sesion ->
                 onLoginSuccess(sesion)
+                viewModel.resetLoginState()
             }.onFailure {
                 errorMessage = "Correo o contraseña incorrectos"
+                viewModel.resetLoginState()
             }
         }
     }

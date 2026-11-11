@@ -21,4 +21,8 @@ class LoginViewModel(
             _loginState.value = resultado
         }
     }
+
+    fun resetLoginState() {
+        _loginState.value = null
+    }
 }
