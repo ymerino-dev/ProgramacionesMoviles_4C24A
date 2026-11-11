@@ -23,15 +23,17 @@ import com.google.firebase.auth.FirebaseAuth
 fun AdminScreen(
     totalGuardados: Int,
     totalFavoritos: Int,
+    isDarkTheme: Boolean,
+    onToggleDarkTheme: () -> Unit,
     onSincronizar: () -> Unit,
     onLimpiarCache: () -> Unit,
     onAgregarProducto: (String, Double, String, String, String) -> Unit,
+    onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showAddProductDialog by remember { mutableStateOf(false) }
     var isSyncing by remember { mutableStateOf(false) }
-    var isDarkMode by remember { mutableStateOf(false) }
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     val adminEmail = currentUser?.email ?: "admin@tecsup.edu.pe"
@@ -182,8 +184,8 @@ fun AdminScreen(
                     ) {
                         Text("Modo Oscuro", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                         Switch(
-                            checked = isDarkMode,
-                            onCheckedChange = { isDarkMode = it }
+                            checked = isDarkTheme,
+                            onCheckedChange = { onToggleDarkTheme() }
                         )
                     }
                 }

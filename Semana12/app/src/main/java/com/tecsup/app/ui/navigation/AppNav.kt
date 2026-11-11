@@ -31,7 +31,11 @@ import com.tecsup.app.ui.login.LoginViewModel
 import com.tecsup.app.ui.perfil.PerfilScreen
 
 @Composable
-fun AppNav(container: AppContainer) {
+fun AppNav(
+    container: AppContainer,
+    isDarkTheme: Boolean = false,
+    onToggleDarkTheme: () -> Unit = {}
+) {
     val navController = rememberNavController()
     var userRole by remember { mutableStateOf(Rol.USUARIO) }
 
@@ -50,14 +54,8 @@ fun AppNav(container: AppContainer) {
                 viewModel = viewModel,
                 onLoginSuccess = { sesion ->
                     userRole = sesion.rol
-                    if (sesion.rol == Rol.ADMIN) {
-                        navController.navigate("admin") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate("lista") {
-                            popUpTo("login") { inclusive = true }
-                        }
+                    navController.navigate("lista") {
+                        popUpTo("login") { inclusive = true }
                     }
                 }
             )
@@ -159,6 +157,8 @@ fun AppNav(container: AppContainer) {
         composable("perfil") {
             PerfilScreen(
                 userRole = userRole,
+                isDarkTheme = isDarkTheme,
+                onToggleDarkTheme = onToggleDarkTheme,
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
                     container.authRepository.cerrarSesion()
@@ -169,33 +169,44 @@ fun AppNav(container: AppContainer) {
             )
         }
 
-        // Ruta de Panel Admin (Solo muestra el panel)
+        // Ruta de Panel Admin
         composable("admin") {
-            val viewModel: AdminViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return AdminViewModel(container.itemRepository, container.notificador) as T
+            if (userRole == Rol.ADMIN) {
+                val viewModel: AdminViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return AdminViewModel(container.itemRepository, container.notificador) as T
+                        }
                     }
-                }
-            )
-            val totalGuardados by viewModel.totalGuardados.collectAsState()
-            val totalFavoritos by viewModel.totalFavoritos.collectAsState()
+                )
+                val totalGuardados by viewModel.totalGuardados.collectAsState()
+                val totalFavoritos by viewModel.totalFavoritos.collectAsState()
 
-            AdminScreen(
-                totalGuardados = totalGuardados,
-                totalFavoritos = totalFavoritos,
-                onSincronizar = { viewModel.sincronizar() },
-                onLimpiarCache = { viewModel.limpiarCache() },
-                onAgregarProducto = { title, price, category, desc, img ->
-                    viewModel.agregarProducto(title, price, category, desc, img)
-                },
-                onLogoutClick = {
-                    container.authRepository.cerrarSesion()
-                    navController.navigate("login") {
+                AdminScreen(
+                    totalGuardados = totalGuardados,
+                    totalFavoritos = totalFavoritos,
+                    isDarkTheme = isDarkTheme,
+                    onToggleDarkTheme = onToggleDarkTheme,
+                    onSincronizar = { viewModel.sincronizar() },
+                    onLimpiarCache = { viewModel.limpiarCache() },
+                    onAgregarProducto = { title, price, category, desc, img ->
+                        viewModel.agregarProducto(title, price, category, desc, img)
+                    },
+                    onBackClick = { navController.popBackStack() },
+                    onLogoutClick = {
+                        container.authRepository.cerrarSesion()
+                        navController.navigate("login") {
+                            popUpTo("admin") { inclusive = true }
+                        }
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate("lista") {
                         popUpTo("admin") { inclusive = true }
                     }
                 }
-            )
+            }
         }
     }
 }

@@ -6,30 +6,33 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.tecsup.app.ui.navigation.AppNav
 import com.tecsup.app.ui.theme.LabintegradorMerinoTheme
 
-
 class MainActivity : ComponentActivity() {
 
-    // Inicializamos nuestro contenedor manual de dependencias
     private lateinit var appContainer: AppContainer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Creamos la instancia pasándole el contexto
         appContainer = AppContainer(applicationContext)
 
         setContent {
-            LabintegradorMerinoTheme {
+            var isDarkTheme by remember { mutableStateOf(false) }
+
+            LabintegradorMerinoTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Llamamos a nuestra navegación principal inyectándole el container
-                    AppNav(container = appContainer)
+                    AppNav(
+                        container = appContainer,
+                        isDarkTheme = isDarkTheme,
+                        onToggleDarkTheme = { isDarkTheme = !isDarkTheme }
+                    )
                 }
             }
         }

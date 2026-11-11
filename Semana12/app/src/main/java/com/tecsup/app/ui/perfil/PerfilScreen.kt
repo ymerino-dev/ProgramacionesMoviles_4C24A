@@ -23,13 +23,14 @@ import com.tecsup.app.domain.model.Rol
 @Composable
 fun PerfilScreen(
     userRole: Rol,
+    isDarkTheme: Boolean,
+    onToggleDarkTheme: () -> Unit,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val email = currentUser?.email ?: "Usuario desconocido"
     val uid = currentUser?.uid ?: "UID no disponible"
-    var isDarkMode by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -95,8 +96,8 @@ fun PerfilScreen(
                     ) {
                         Text("Modo Oscuro", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                         Switch(
-                            checked = isDarkMode,
-                            onCheckedChange = { isDarkMode = it }
+                            checked = isDarkTheme,
+                            onCheckedChange = { onToggleDarkTheme() }
                         )
                     }
 
