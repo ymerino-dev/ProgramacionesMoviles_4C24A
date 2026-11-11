@@ -1,198 +1,195 @@
-package com.tecsup.app.ui.navigation
+package com.tecsup.app.ui.lista
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.tecsup.app.AppContainer
-import com.tecsup.app.domain.model.Rol
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.tecsup.app.ui.UiState
-import com.tecsup.app.ui.admin.AdminScreen
-import com.tecsup.app.ui.admin.AdminViewModel
-import com.tecsup.app.ui.detalle.DetalleScreen
-import com.tecsup.app.ui.detalle.DetalleViewModel
-import com.tecsup.app.ui.favoritos.FavoritosScreen
-import com.tecsup.app.ui.favoritos.FavoritosViewModel
-import com.tecsup.app.ui.lista.ListaScreen
-import com.tecsup.app.ui.lista.ListaViewModel
-import com.tecsup.app.ui.login.LoginScreen
-import com.tecsup.app.ui.login.LoginViewModel
-import com.tecsup.app.ui.perfil.PerfilScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNav(container: AppContainer) {
-    val navController = rememberNavController()
-    var userRole by remember { mutableStateOf(Rol.USUARIO) }
+fun ListaScreen(
+    viewModel: ListaViewModel,
+    userRole: String,
+    onItemClick: (Int) -> Unit,
+    onFavoritesClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onAdminClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
+    val estado by viewModel.estado.collectAsState()
+    val aviso by viewModel.aviso.collectAsState()
 
-    NavHost(navController = navController, startDestination = "login") {
-
-        // Ruta de Login
-        composable("login") {
-            val viewModel: LoginViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return LoginViewModel(container.authRepository) as T
-                    }
-                }
-            )
-            LoginScreen(
-                viewModel = viewModel,
-                onLoginSuccess = { sesion ->
-                    userRole = sesion.rol
-                    if (sesion.rol == Rol.ADMIN) {
-                        navController.navigate("admin") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate("lista") {
-                            popUpTo("login") { inclusive = true }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Catálogo", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium) },
+                actions = {
+                    if (userRole == "admin") {
+                        IconButton(onClick = onAdminClick) {
+                            Icon(Icons.Default.Person, contentDescription = "Admin")
                         }
                     }
-                }
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Favoritos") },
+                    label = { Text("Favoritos") },
+                    selected = false,
+                    onClick = onFavoritesClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = onProfileClick
+                )
+            }
         }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (aviso != null) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.errorContainer
+                    ) {
+                        Text(
+                            text = aviso!!,
+                            modifier = Modifier.padding(8.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
 
-        // Ruta del Catálogo de Productos
-        composable("lista") {
-            val viewModel: ListaViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return ListaViewModel(container.itemRepository) as T
+                when (val currentEstado = estado) {
+                    is UiState.Cargando -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
-            )
-            ListaScreen(
-                viewModel = viewModel,
-                userRole = userRole,
-                onItemClick = { itemId ->
-                    navController.navigate("detalle/$itemId")
-                },
-                onFavoritesClick = {
-                    navController.navigate("favoritos")
-                },
-                onProfileClick = {
-                    navController.navigate("perfil")
-                },
-                onAdminClick = {
-                    navController.navigate("admin")
-                },
-                onLogoutClick = {
-                    container.authRepository.cerrarSesion()
-                    navController.navigate("login") {
-                        popUpTo("lista") { inclusive = true }
+                    is UiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = currentEstado.mensaje, color = MaterialTheme.colorScheme.error)
+                        }
                     }
-                }
-            )
-        }
+                    is UiState.Exito -> {
+                        val productos = currentEstado.datos
+                        if (productos.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("No hay productos disponibles")
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(productos) { item ->
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onItemClick(item.id) }, // Navega al detalle al hacer clic en la tarjeta
+                                        shape = RoundedCornerShape(16.dp),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(12.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(120.dp)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(MaterialTheme.colorScheme.surface)
+                                            ) {
+                                                if (item.image.isNotBlank()) {
+                                                    AsyncImage(
+                                                        model = item.image,
+                                                        contentDescription = item.title,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        contentScale = ContentScale.Crop
+                                                    )
+                                                }
 
-        // Ruta de Detalle
-        composable(
-            route = "detalle/{itemId}",
-            arguments = listOf(navArgument("itemId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getInt("itemId") ?: 0
-            val viewModel: DetalleViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return DetalleViewModel(itemId, container.itemRepository) as T
-                    }
-                }
-            )
-            val state by viewModel.uiState.collectAsState()
+                                                // Botón de Favorito encima de la imagen
+                                                IconButton(
+                                                    onClick = { viewModel.alternarFavorito(item.id) },
+                                                    modifier = Modifier.align(Alignment.TopEnd)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = if (item.esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                        contentDescription = "Favorito",
+                                                        // ¡Aquí se pinta de rojo si esFavorito es true!
+                                                        tint = if (item.esFavorito) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
 
-            when (val currentState = state) {
-                is UiState.Cargando -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                is UiState.Exito -> {
-                    DetalleScreen(
-                        item = currentState.datos,
-                        isFavorite = false,
-                        onToggleFavorite = { viewModel.alternarFavorito() },
-                        onBackClick = { navController.popBackStack() }
-                    )
-                }
-                is UiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = currentState.mensaje)
+                                            Spacer(modifier = Modifier.height(8.dp))
+
+                                            Text(
+                                                text = item.title,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1
+                                            )
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            Text(
+                                                text = "$ ${item.price}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        // Ruta de Favoritos
-        composable("favoritos") {
-            val viewModel: FavoritosViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return FavoritosViewModel(container.itemRepository) as T
-                    }
-                }
-            )
-            FavoritosScreen(
-                viewModel = viewModel,
-                onHomeClick = {
-                    navController.navigate("lista") {
-                        popUpTo("lista") { inclusive = true }
-                    }
-                },
-                onProfileClick = {
-                    navController.navigate("perfil")
-                }
-            )
-        }
-
-        // Ruta de Perfil
-        composable("perfil") {
-            PerfilScreen(
-                userRole = userRole,
-                onBackClick = { navController.popBackStack() },
-                onLogoutClick = {
-                    container.authRepository.cerrarSesion()
-                    navController.navigate("login") {
-                        popUpTo("perfil") { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        // Ruta de Panel Admin (Solo muestra el panel)
-        composable("admin") {
-            val viewModel: AdminViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return AdminViewModel(container.itemRepository, container.notificador) as T
-                    }
-                }
-            )
-            val totalGuardados by viewModel.totalGuardados.collectAsState()
-            val totalFavoritos by viewModel.totalFavoritos.collectAsState()
-
-            AdminScreen(
-                totalGuardados = totalGuardados,
-                totalFavoritos = totalFavoritos,
-                onSincronizar = { viewModel.sincronizar() },
-                onLimpiarCache = { viewModel.limpiarCache() },
-                onBackClick = {
-                    container.authRepository.cerrarSesion()
-                    navController.navigate("login") {
-                        popUpTo("admin") { inclusive = true }
-                    }
-                }
-            )
         }
     }
 }
