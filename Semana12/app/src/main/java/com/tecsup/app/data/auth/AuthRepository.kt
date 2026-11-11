@@ -1,5 +1,9 @@
 package com.tecsup.app.data.auth
 
+import com.tecsup.app.domain.model.Sesion
+
 interface AuthRepository {
-    suspend fun login(email: String, password: String): Boolean
+    suspend fun iniciarSesion(correo: String, clave: String): Result<Sesion>
+    suspend fun sesionActual(): Sesion?
+    fun cerrarSesion()
 }

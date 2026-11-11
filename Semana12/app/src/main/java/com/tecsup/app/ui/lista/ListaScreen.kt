@@ -3,19 +3,27 @@ package com.tecsup.app.ui.lista
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tecsup.app.domain.model.Item
+import com.tecsup.app.domain.model.Rol
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaScreen(
     viewModel: ListaViewModel,
-    onItemClick: (Int) -> Unit // <-- Añadido aquí para recibir la navegación
+    userRole: Rol,
+    onItemClick: (Int) -> Unit,
+    onFavoritesClick: () -> Unit,
+    onAdminClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val items by viewModel.items.collectAsState()
 
@@ -23,6 +31,19 @@ fun ListaScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Catálogo de Productos", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(Icons.Default.Favorite, contentDescription = "Favoritos")
+                    }
+                    if (userRole == Rol.ADMIN) {
+                        IconButton(onClick = onAdminClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Panel Admin")
+                        }
+                    }
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar Sesión")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -36,7 +57,6 @@ fun ListaScreen(
                 .padding(paddingValues)
         ) {
             if (items.isEmpty()) {
-                // Estado vacío o cargando
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -58,7 +78,7 @@ fun ListaScreen(
                 ) {
                     items(items) { item ->
                         Card(
-                            onClick = { onItemClick(item.id) }, // <-- Navega al detalle con el ID
+                            onClick = { onItemClick(item.id) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),

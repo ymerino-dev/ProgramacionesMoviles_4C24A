@@ -1,6 +1,5 @@
 package com.tecsup.app.ui.login
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,17 +9,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tecsup.app.domain.model.Sesion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (Sesion) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -28,10 +27,12 @@ fun LoginScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(loginState) {
-        if (loginState == true) {
-            onLoginSuccess()
-        } else if (loginState == false) {
-            errorMessage = "Correo o contraseña incorrectos"
+        loginState?.let { result ->
+            result.onSuccess { sesion ->
+                onLoginSuccess(sesion)
+            }.onFailure {
+                errorMessage = "Correo o contraseña incorrectos"
+            }
         }
     }
 
