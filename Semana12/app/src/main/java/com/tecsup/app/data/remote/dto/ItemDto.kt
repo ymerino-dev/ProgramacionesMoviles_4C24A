@@ -13,16 +13,10 @@ data class ItemDto(
     @SerialName("description")
     val descripcion: String,
 
-    @SerialName("thumbnail")
-    val imagenUrl: String = "", // <--- Añadimos valor por defecto para que no falle si falta
+    @SerialName("image")
+    val imagenUrl: String = "",
 
     val price: Double,
 
     val category: String
-)
-
-@Serializable
-data class ItemResponseDto(
-    @SerialName("products")
-    val productos: List<ItemDto>
 )

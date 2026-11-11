@@ -6,8 +6,6 @@ import com.tecsup.app.data.remote.ApiService
 import com.tecsup.app.domain.model.Item
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.io.IOException
-import retrofit2.HttpException
 
 class ItemRepositoryImpl(
     private val apiService: ApiService,
@@ -18,7 +16,7 @@ class ItemRepositoryImpl(
         entityList.map { entity ->
             Item(
                 id = entity.id,
-                title = entity.title,         // Usando el nombre correcto de tu Entity
+                title = entity.title,
                 description = entity.description,
                 price = entity.price,
                 category = entity.category,
@@ -42,11 +40,11 @@ class ItemRepositoryImpl(
 
     override suspend fun refrescar(): Result<Int> = try {
         val favoritosIds = itemDao.idsFavoritos().toSet()
-        val response = apiService.obtenerProductos()
-        val nuevos = response.productos.map { dto ->
+        val listaDto = apiService.obtenerProductos()
+        val nuevos = listaDto.map { dto ->
             ItemEntity(
                 id = dto.id,
-                title = dto.titulo,         // Mapeado desde el DTO
+                title = dto.titulo,
                 description = dto.descripcion,
                 price = dto.price,
                 category = dto.category,
@@ -56,11 +54,10 @@ class ItemRepositoryImpl(
         }
         itemDao.guardarTodos(items = nuevos)
         Result.success(value = nuevos.size)
-    } catch (e: IOException) {
-        Result.failure(exception = e)
-    } catch (e: HttpException) {
+    } catch (e: Exception) {
         Result.failure(exception = e)
     }
+
     override suspend fun obtenerDetalle(id: Int): Result<Item> = try {
         val dto = apiService.obtenerDetalleProducto(id)
         val item = Item(
