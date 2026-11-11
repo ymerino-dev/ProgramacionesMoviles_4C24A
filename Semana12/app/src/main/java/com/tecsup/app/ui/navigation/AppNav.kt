@@ -134,7 +134,12 @@ fun AppNav(container: AppContainer) {
             )
             FavoritosScreen(
                 viewModel = viewModel,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = {
+                    navController.navigate("lista") {
+                        popUpTo("lista") { inclusive = true }
+                    }
+                }
             )
         }
 
