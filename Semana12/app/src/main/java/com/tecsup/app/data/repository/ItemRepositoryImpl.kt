@@ -17,10 +17,11 @@ class ItemRepositoryImpl(
             Item(
                 id = entity.id,
                 title = entity.title,
-                description = entity.description,
                 price = entity.price,
+                description = entity.description,
                 category = entity.category,
-                image = entity.image
+                image = entity.image,
+                esFavorito = entity.esFavorito // <--- Mapeo correcto
             )
         }
     }
@@ -30,10 +31,11 @@ class ItemRepositoryImpl(
             Item(
                 id = entity.id,
                 title = entity.title,
-                description = entity.description,
                 price = entity.price,
+                description = entity.description,
                 category = entity.category,
-                image = entity.image
+                image = entity.image,
+                esFavorito = entity.esFavorito // <--- Mapeo correcto para favoritos
             )
         }
     }
@@ -66,7 +68,8 @@ class ItemRepositoryImpl(
             description = dto.descripcion,
             price = dto.price,
             category = dto.category,
-            image = dto.imagenUrl
+            image = dto.imagenUrl,
+            esFavorito = false
         )
         Result.success(value = item)
     } catch (e: Exception) {
