@@ -2,6 +2,7 @@ package com.tecsup.app.ui.lista
 
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
+import com.tecsup.app.notification.Notificador
 import com.tecsup.app.ui.UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,12 +24,14 @@ class ListaViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepository: FakeItemRepository
+    private lateinit var fakeNotificador: FakeNotificador
     private lateinit var viewModel: ListaViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeItemRepository()
+        fakeNotificador = FakeNotificador()
     }
 
     @After
@@ -46,7 +49,7 @@ class ListaViewModelTest {
         fakeRepository.setInitialItems(sampleItems)
 
         // When
-        viewModel = ListaViewModel(fakeRepository)
+        viewModel = ListaViewModel(fakeRepository, fakeNotificador)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
@@ -59,7 +62,7 @@ class ListaViewModelTest {
     fun testCargarProductosInvokesRefrescar() = runTest {
         // Given
         fakeRepository.resetCallCount()
-        viewModel = ListaViewModel(fakeRepository)
+        viewModel = ListaViewModel(fakeRepository, fakeNotificador)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialCount = fakeRepository.refreshCallCount
@@ -79,12 +82,18 @@ class ListaViewModelTest {
         fakeRepository.shouldFail = true
 
         // When
-        viewModel = ListaViewModel(fakeRepository)
+        viewModel = ListaViewModel(fakeRepository, fakeNotificador)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
         val estado = viewModel.estado.value
         assertTrue(estado is UiState.Error)
+    }
+
+    private class FakeNotificador : Notificador {
+        override fun mostrarNotificacion(titulo: String, mensaje: String) {
+            // No-op for test
+        }
     }
 
     private class FakeItemRepository : ItemRepository {

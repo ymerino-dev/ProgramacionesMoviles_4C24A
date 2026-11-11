@@ -1,18 +1,21 @@
 package com.tecsup.app.ui.lista
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,14 +26,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.tecsup.app.domain.model.Rol
 import com.tecsup.app.ui.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaScreen(
     viewModel: ListaViewModel,
-    onFavoritosClick: () -> Unit,
-    onPerfilClick: () -> Unit
+    userRole: Rol,
+    onItemClick: (Int) -> Unit,
+    onFavoritesClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onAdminClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val estado by viewModel.estado.collectAsState()
     val aviso by viewModel.aviso.collectAsState()
@@ -43,8 +51,13 @@ fun ListaScreen(
                     IconButton(onClick = { /* Notificaciones */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
                     }
-                    IconButton(onClick = { /* Salir */ }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Salir")
+                    if (userRole == Rol.ADMIN) {
+                        IconButton(onClick = onAdminClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Panel Admin")
+                        }
+                    }
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -64,13 +77,13 @@ fun ListaScreen(
                     icon = { Icon(Icons.Default.Favorite, contentDescription = "Favoritos") },
                     label = { Text("Favoritos") },
                     selected = false,
-                    onClick = onFavoritosClick
+                    onClick = onFavoritesClick
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = onPerfilClick
+                    onClick = onProfileClick
                 )
             }
         }
@@ -118,7 +131,9 @@ fun ListaScreen(
                             ) {
                                 items(productos) { item ->
                                     Card(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onItemClick(item.id) },
                                         shape = RoundedCornerShape(16.dp),
                                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
@@ -142,15 +157,13 @@ fun ListaScreen(
                                                     )
                                                 }
 
-                                                // Botón de Favorito encima de la imagen
                                                 IconButton(
-                                                    onClick = { viewModel.alternarFavorito(item.id) },
+                                                    onClick = { viewModel.alternarFavorito(item) },
                                                     modifier = Modifier.align(Alignment.TopEnd)
                                                 ) {
                                                     Icon(
                                                         imageVector = if (item.esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                                         contentDescription = "Favorito",
-                                                        // ¡Aquí se pinta de rojo si es favorito!
                                                         tint = if (item.esFavorito) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
                                                     )
                                                 }

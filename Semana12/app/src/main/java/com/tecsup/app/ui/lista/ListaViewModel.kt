@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
+import com.tecsup.app.notification.Notificador
 import com.tecsup.app.ui.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +16,8 @@ import java.io.IOException
 import retrofit2.HttpException
 
 class ListaViewModel(
-    private val itemRepository: ItemRepository
+    private val itemRepository: ItemRepository,
+    private val notificador: Notificador
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UiState<List<Item>>>(UiState.Cargando)
@@ -24,7 +26,6 @@ class ListaViewModel(
     private val _aviso = MutableStateFlow<String?>(null)
     val aviso: StateFlow<String?> = _aviso.asStateFlow()
 
-    // Exponemos la lista de favoritos directamente desde el repositorio como StateFlow para la UI
     val favoritos: StateFlow<List<Item>> = itemRepository.favoritos
         .stateIn(
             scope = viewModelScope,
@@ -83,11 +84,16 @@ class ListaViewModel(
         }
     }
 
-    // Función para alternar el estado de favorito de un producto desde la UI
-    fun alternarFavorito(id: Int) {
+    fun alternarFavorito(item: Item) {
         viewModelScope.launch {
             try {
-                itemRepository.alternarFavorito(id)
+                itemRepository.alternarFavorito(item.id)
+                val nuevoEstado = !item.esFavorito
+                if (nuevoEstado) {
+                    notificador.mostrarNotificacion("Producto Favorito", "Se agregó '${item.title}' a tus favoritos")
+                } else {
+                    notificador.mostrarNotificacion("Producto Favorito", "Se eliminó '${item.title}' de tus favoritos")
+                }
             } catch (e: Exception) {
                 println("ListaViewModel Error al alternar favorito: ${e.message}")
             }
