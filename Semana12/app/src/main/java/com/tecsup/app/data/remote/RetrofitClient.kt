@@ -12,7 +12,10 @@ object RetrofitClient {
 
     val apiService: ApiService by lazy {
         val contentType = "application/json".toMediaType()
-        val json = Json { ignoreUnknownKeys = true }
+        val json = Json { 
+            ignoreUnknownKeys = true 
+            coerceInputValues = true
+        }
 
         val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)

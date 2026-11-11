@@ -5,12 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.tecsup.app.data.repository.ItemRepository
 import com.tecsup.app.domain.model.Item
 import com.tecsup.app.ui.UiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import retrofit2.HttpException
 
@@ -27,13 +25,11 @@ class ListaViewModel(
     private var refrescoTerminado = false
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 itemRepository.items.collect { lista ->
-                    withContext(Dispatchers.Main) {
-                        if (lista.isNotEmpty()) {
-                            _estado.value = UiState.Exito(lista)
-                        }
+                    if (lista.isNotEmpty()) {
+                        _estado.value = UiState.Exito(lista)
                     }
                 }
             } catch (e: Exception) {
@@ -50,9 +46,10 @@ class ListaViewModel(
             try {
                 val resultado = itemRepository.refrescar()
                 refrescoTerminado = true
-                resultado.onSuccess {
+                if (resultado.isSuccess) {
                     _aviso.value = null
-                }.onFailure { e ->
+                } else {
+                    val e = resultado.exceptionOrNull() ?: Exception("Error desconocido")
                     println("ListaViewModel Refrescar Failure: ${e.message}")
                     val cantidad = itemRepository.cantidadGuardada()
                     if (cantidad == 0) {
@@ -77,7 +74,7 @@ class ListaViewModel(
     private fun mensajeDe(e: Throwable): String {
         return when (e) {
             is IOException -> "No hay conexión a internet"
-            is HttpException -> "El servidor respondió con error ${e.code()}"
+            is HttpException -> "El servidor respondió con error ${e.code()}`"
             else -> "Ocurrió un error inesperado: ${e.localizedMessage}"
         }
     }
