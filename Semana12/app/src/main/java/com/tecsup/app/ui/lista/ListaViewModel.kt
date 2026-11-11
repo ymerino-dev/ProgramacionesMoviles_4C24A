@@ -28,7 +28,7 @@ class ListaViewModel(
         viewModelScope.launch {
             try {
                 itemRepository.items.collect { lista ->
-                    if (lista.isNotEmpty()) {
+                    if (lista.isNotEmpty() || refrescoTerminado) {
                         _estado.value = UiState.Exito(lista)
                     }
                 }
@@ -41,7 +41,9 @@ class ListaViewModel(
 
     fun cargarProductos() {
         _aviso.value = null
-        _estado.value = UiState.Cargando
+        if (_estado.value !is UiState.Exito) {
+            _estado.value = UiState.Cargando
+        }
         viewModelScope.launch {
             try {
                 val resultado = itemRepository.refrescar()
@@ -74,7 +76,7 @@ class ListaViewModel(
     private fun mensajeDe(e: Throwable): String {
         return when (e) {
             is IOException -> "No hay conexión a internet"
-            is HttpException -> "El servidor respondió con error ${e.code()}`"
+            is HttpException -> "El servidor respondió con error ${e.code()}"
             else -> "Ocurrió un error inesperado: ${e.localizedMessage}"
         }
     }
