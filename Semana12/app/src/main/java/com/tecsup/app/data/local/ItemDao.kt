@@ -28,6 +28,9 @@ interface ItemDao {
     @Query("UPDATE items SET esFavorito = NOT esFavorito WHERE id = :id")
     suspend fun alternarFavorito(id: Int)
 
+    @Query("UPDATE items SET esFavorito = 0")
+    suspend fun quitarTodosFavoritos()
+
     @Query("DELETE FROM items")
     suspend fun borrarTodo()
 }

@@ -61,7 +61,7 @@ class ListaViewModelTest {
         fakeRepository.resetCallCount()
         viewModel = ListaViewModel(fakeRepository)
         testDispatcher.scheduler.advanceUntilIdle()
-        
+
         val initialCount = fakeRepository.refreshCallCount
 
         // When
@@ -123,6 +123,10 @@ class ListaViewModelTest {
 
         override suspend fun alternarFavorito(id: Int) {
             // No-op for fake
+        }
+
+        override suspend fun quitarTodosFavoritos() {
+            _favoritos.value = emptyList()
         }
 
         override suspend fun cantidadGuardada(): Int = _items.value.size

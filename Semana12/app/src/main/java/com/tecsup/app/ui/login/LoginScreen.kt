@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,7 +57,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header con Logo ShopifyApp
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(top = 24.dp)
@@ -88,7 +89,6 @@ fun LoginScreen(
                 )
             }
 
-            // Tarjeta de Formulario de Login
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,8 +139,13 @@ fun LoginScreen(
                         placeholder = { Text("Contraseña") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                         trailingIcon = {
+                            val image = if (passwordVisible)
+                                Icons.Default.Visibility
+                            else
+                                Icons.Default.VisibilityOff
+
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Text(if (passwordVisible) "Ocultar" else "Ver", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                Icon(imageVector = image, contentDescription = "Ver contraseña")
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -183,7 +188,6 @@ fun LoginScreen(
                 }
             }
 
-            // Footer
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(bottom = 12.dp)

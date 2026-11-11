@@ -28,6 +28,7 @@ import com.tecsup.app.ui.lista.ListaScreen
 import com.tecsup.app.ui.lista.ListaViewModel
 import com.tecsup.app.ui.login.LoginScreen
 import com.tecsup.app.ui.login.LoginViewModel
+import com.tecsup.app.ui.perfil.PerfilScreen
 
 @Composable
 fun AppNav(container: AppContainer) {
@@ -49,8 +50,14 @@ fun AppNav(container: AppContainer) {
                 viewModel = viewModel,
                 onLoginSuccess = { sesion ->
                     userRole = sesion.rol
-                    navController.navigate("lista") {
-                        popUpTo("login") { inclusive = true }
+                    if (sesion.rol == Rol.ADMIN) {
+                        navController.navigate("admin") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("lista") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
                 }
             )
@@ -73,6 +80,9 @@ fun AppNav(container: AppContainer) {
                 },
                 onFavoritesClick = {
                     navController.navigate("favoritos")
+                },
+                onProfileClick = {
+                    navController.navigate("perfil")
                 },
                 onAdminClick = {
                     navController.navigate("admin")
@@ -134,16 +144,32 @@ fun AppNav(container: AppContainer) {
             )
             FavoritosScreen(
                 viewModel = viewModel,
-                onBackClick = { navController.popBackStack() },
                 onHomeClick = {
                     navController.navigate("lista") {
                         popUpTo("lista") { inclusive = true }
+                    }
+                },
+                onProfileClick = {
+                    navController.navigate("perfil")
+                }
+            )
+        }
+
+        // Ruta de Perfil
+        composable("perfil") {
+            PerfilScreen(
+                userRole = userRole,
+                onBackClick = { navController.popBackStack() },
+                onLogoutClick = {
+                    container.authRepository.cerrarSesion()
+                    navController.navigate("login") {
+                        popUpTo("perfil") { inclusive = true }
                     }
                 }
             )
         }
 
-        // Ruta de Panel Admin
+        // Ruta de Panel Admin (Solo muestra el panel)
         composable("admin") {
             val viewModel: AdminViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
@@ -160,7 +186,12 @@ fun AppNav(container: AppContainer) {
                 totalFavoritos = totalFavoritos,
                 onSincronizar = { viewModel.sincronizar() },
                 onLimpiarCache = { viewModel.limpiarCache() },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = {
+                    container.authRepository.cerrarSesion()
+                    navController.navigate("login") {
+                        popUpTo("admin") { inclusive = true }
+                    }
+                }
             )
         }
     }

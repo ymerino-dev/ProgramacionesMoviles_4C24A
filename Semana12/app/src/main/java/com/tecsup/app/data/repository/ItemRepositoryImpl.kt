@@ -77,6 +77,10 @@ class ItemRepositoryImpl(
         itemDao.alternarFavorito(id)
     }
 
+    override suspend fun quitarTodosFavoritos() {
+        itemDao.quitarTodosFavoritos()
+    }
+
     override suspend fun cantidadGuardada(): Int {
         return itemDao.contar()
     }

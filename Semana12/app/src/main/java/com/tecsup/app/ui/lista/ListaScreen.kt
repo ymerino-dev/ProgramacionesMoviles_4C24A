@@ -38,6 +38,7 @@ fun ListaScreen(
     userRole: Rol,
     onItemClick: (Int) -> Unit,
     onFavoritesClick: () -> Unit,
+    onProfileClick: () -> Unit,
     onAdminClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
@@ -134,7 +135,7 @@ fun ListaScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = { if (userRole == Rol.ADMIN) onAdminClick() }
+                    onClick = onProfileClick
                 )
             }
         }

@@ -7,9 +7,10 @@ import com.tecsup.app.domain.model.Item
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class FavoritosViewModel(
-    itemRepository: ItemRepository
+    private val itemRepository: ItemRepository
 ) : ViewModel() {
     val favoritos: StateFlow<List<Item>> = itemRepository.favoritos
         .stateIn(
@@ -17,4 +18,16 @@ class FavoritosViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun alternarFavorito(id: Int) {
+        viewModelScope.launch {
+            itemRepository.alternarFavorito(id)
+        }
+    }
+
+    fun quitarTodosFavoritos() {
+        viewModelScope.launch {
+            itemRepository.quitarTodosFavoritos()
+        }
+    }
 }

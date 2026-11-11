@@ -24,18 +24,44 @@ import coil.compose.AsyncImage
 @Composable
 fun FavoritosScreen(
     viewModel: FavoritosViewModel,
-    onBackClick: () -> Unit,
-    onHomeClick: () -> Unit
+    onHomeClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     val favoritos by viewModel.favoritos.collectAsState()
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text("Eliminar favoritos") },
+            text = { Text("¿Estás seguro de que deseas eliminar todos los productos de favoritos?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteAllDialog = false
+                        viewModel.quitarTodosFavoritos()
+                    }
+                ) {
+                    Text("Sí, eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Favoritos", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium) },
                 actions = {
-                    IconButton(onClick = { /* Limpiar todos */ }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar todos")
+                    if (favoritos.isNotEmpty()) {
+                        IconButton(onClick = { showDeleteAllDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar todos")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -61,7 +87,7 @@ fun FavoritosScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = { }
+                    onClick = onProfileClick
                 )
             }
         }
@@ -69,7 +95,7 @@ fun FavoritosScreen(
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (favoritos.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No tienes productos favoritos guardados", style = MaterialTheme.typography.bodyLarge)
+                    Text("No tienes productos favoritos guardados", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -127,10 +153,10 @@ fun FavoritosScreen(
                                         )
                                     }
                                 }
-                                IconButton(onClick = { /* Quitar favorito */ }) {
+                                IconButton(onClick = { viewModel.alternarFavorito(item.id) }) {
                                     Icon(
                                         imageVector = Icons.Default.Favorite,
-                                        contentDescription = "Favorito",
+                                        contentDescription = "Quitar de favoritos",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
