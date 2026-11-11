@@ -8,8 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,28 +20,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(
     totalGuardados: Int,
     totalFavoritos: Int,
-    isDarkTheme: Boolean,
-    onToggleDarkTheme: () -> Unit,
     onSincronizar: () -> Unit,
     onLimpiarCache: () -> Unit,
     onAgregarProducto: (String, Double, String, String, String) -> Unit,
     onVerCatalogo: () -> Unit,
-    onBackClick: () -> Unit,
+    onFavoritosClick: () -> Unit,
+    onPerfilClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showAddProductDialog by remember { mutableStateOf(false) }
     var isSyncing by remember { mutableStateOf(false) }
-
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    val adminEmail = currentUser?.email ?: "admin@tecsup.edu.pe"
 
     var titleInput by remember { mutableStateOf("") }
     var priceInput by remember { mutableStateOf("") }
@@ -154,6 +152,36 @@ fun AdminScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = onVerCatalogo
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Favoritos") },
+                    label = { Text("Favoritos") },
+                    selected = false,
+                    onClick = onFavoritosClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Panel") },
+                    label = { Text("Panel") },
+                    selected = true,
+                    onClick = { }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = onPerfilClick
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -165,34 +193,6 @@ fun AdminScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Cuenta Administradora", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(adminEmail, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Modo Oscuro", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                        Switch(
-                            checked = isDarkTheme,
-                            onCheckedChange = { onToggleDarkTheme() }
-                        )
-                    }
-                }
-            }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -226,19 +226,6 @@ fun AdminScreen(
                         Text(text = "$totalFavoritos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
-            }
-
-            Button(
-                onClick = onVerCatalogo,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-            ) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Ver Catálogo de Productos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
             Button(

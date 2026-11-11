@@ -175,7 +175,7 @@ fun AppNav(
             )
         }
 
-        // Ruta de Panel Admin (Solo muestra el panel con opción a ver catálogo)
+        // Ruta de Panel Admin
         composable("admin") {
             if (userRole == Rol.ADMIN) {
                 val viewModel: AdminViewModel = viewModel(
@@ -191,8 +191,6 @@ fun AppNav(
                 AdminScreen(
                     totalGuardados = totalGuardados,
                     totalFavoritos = totalFavoritos,
-                    isDarkTheme = isDarkTheme,
-                    onToggleDarkTheme = onToggleDarkTheme,
                     onSincronizar = { viewModel.sincronizar() },
                     onLimpiarCache = { viewModel.limpiarCache() },
                     onAgregarProducto = { title, price, category, desc, img ->
@@ -201,11 +199,11 @@ fun AppNav(
                     onVerCatalogo = {
                         navController.navigate("lista")
                     },
-                    onBackClick = {
-                        container.authRepository.cerrarSesion()
-                        navController.navigate("login") {
-                            popUpTo("admin") { inclusive = true }
-                        }
+                    onFavoritosClick = {
+                        navController.navigate("favoritos")
+                    },
+                    onPerfilClick = {
+                        navController.navigate("perfil")
                     },
                     onLogoutClick = {
                         container.authRepository.cerrarSesion()
