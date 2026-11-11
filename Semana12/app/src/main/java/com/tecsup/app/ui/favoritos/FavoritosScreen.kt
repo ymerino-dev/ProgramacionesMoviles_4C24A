@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,12 +21,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.tecsup.app.domain.model.Rol
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritosScreen(
     viewModel: FavoritosViewModel,
+    userRole: Rol = Rol.USUARIO,
     onHomeClick: () -> Unit,
+    onAdminClick: () -> Unit = {},
     onProfileClick: () -> Unit
 ) {
     val favoritos by viewModel.favoritos.collectAsState()
@@ -84,6 +88,14 @@ fun FavoritosScreen(
                     selected = true,
                     onClick = { }
                 )
+                if (userRole == Rol.ADMIN) {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Panel") },
+                        label = { Text("Panel") },
+                        selected = false,
+                        onClick = onAdminClick
+                    )
+                }
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
@@ -158,7 +170,7 @@ fun FavoritosScreen(
                                     Icon(
                                         imageVector = Icons.Default.Favorite,
                                         contentDescription = "Quitar de favoritos",
-                                        tint = Color.Red // <--- Corazón en color rojo
+                                        tint = Color.Red
                                     )
                                 }
                             }

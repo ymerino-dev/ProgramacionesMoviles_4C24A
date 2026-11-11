@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -51,11 +50,6 @@ fun ListaScreen(
                     IconButton(onClick = { /* Notificaciones */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
                     }
-                    if (userRole == Rol.ADMIN) {
-                        IconButton(onClick = onAdminClick) {
-                            Icon(Icons.Default.Settings, contentDescription = "Panel Admin")
-                        }
-                    }
                     IconButton(onClick = onLogoutClick) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
                     }
@@ -79,6 +73,14 @@ fun ListaScreen(
                     selected = false,
                     onClick = onFavoritesClick
                 )
+                if (userRole == Rol.ADMIN) {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Panel") },
+                        label = { Text("Panel") },
+                        selected = false,
+                        onClick = onAdminClick
+                    )
+                }
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
