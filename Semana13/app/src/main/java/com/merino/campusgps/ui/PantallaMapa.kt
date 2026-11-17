@@ -1,4 +1,4 @@
-package com.tecsup.campusgps.ui
+package com.merino.campusgps.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,8 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.tecsup.campusgps.model.UbicacionUi
-import com.tecsup.campusgps.viewmodel.MapaViewModel
+import com.merino.campusgps.model.UbicacionUi
+import com.merino.campusgps.viewmodel.MapaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

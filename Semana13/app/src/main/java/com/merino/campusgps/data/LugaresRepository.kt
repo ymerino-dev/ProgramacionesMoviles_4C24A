@@ -1,6 +1,6 @@
-package com.tecsup.campusgps.data
+package com.merino.campusgps.data
 
-import com.tecsup.campusgps.model.Lugar
+import com.merino.campusgps.model.Lugar
 
 interface LugaresRepository {
     fun obtenerLugares(): List<Lugar>

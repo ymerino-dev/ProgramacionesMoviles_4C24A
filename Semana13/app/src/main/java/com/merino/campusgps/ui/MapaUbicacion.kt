@@ -1,4 +1,4 @@
-package com.tecsup.campusgps.ui
+package com.merino.campusgps.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -6,8 +6,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.tecsup.campusgps.model.LugarConDistancia
-import com.tecsup.campusgps.model.UbicacionUi
+import com.merino.campusgps.model.LugarConDistancia
+import com.merino.campusgps.model.UbicacionUi
 
 @Composable
 fun MapaUbicacion(

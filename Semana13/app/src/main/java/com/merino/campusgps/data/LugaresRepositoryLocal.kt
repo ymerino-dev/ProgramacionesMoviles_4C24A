@@ -1,6 +1,6 @@
-package com.tecsup.campusgps.data
+package com.merino.campusgps.data
 
-import com.tecsup.campusgps.model.Lugar
+import com.merino.campusgps.model.Lugar
 
 class LugaresRepositoryLocal : LugaresRepository {
     override fun obtenerLugares(): List<Lugar> = listOf(

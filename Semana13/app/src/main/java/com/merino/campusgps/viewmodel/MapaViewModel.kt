@@ -1,11 +1,11 @@
-package com.tecsup.campusgps.viewmodel
+package com.merino.campusgps.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tecsup.campusgps.data.LugaresRepository
-import com.tecsup.campusgps.data.UbicacionRepository
-import com.tecsup.campusgps.model.LugarConDistancia
-import com.tecsup.campusgps.model.UbicacionUi
+import com.merino.campusgps.data.LugaresRepository
+import com.merino.campusgps.data.UbicacionRepository
+import com.merino.campusgps.model.LugarConDistancia
+import com.merino.campusgps.model.UbicacionUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

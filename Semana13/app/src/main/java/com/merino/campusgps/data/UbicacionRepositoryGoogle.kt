@@ -5,7 +5,7 @@ import android.content.Context
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.tecsup.campusgps.model.Posicion
+import com.merino.campusgps.model.Posicion
 import kotlinx.coroutines.tasks.await
 
 class UbicacionRepositoryGoogle(private val context: Context) : UbicacionRepository {

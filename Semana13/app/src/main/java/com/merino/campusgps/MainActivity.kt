@@ -1,13 +1,13 @@
-package com.tecsup.campusgps
+package com.merino.campusgps
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.merino.campusgps.ui.theme.CampusGPSTheme
-import com.tecsup.campusgps.ui.PantallaMapa
-import com.tecsup.campusgps.viewmodel.CampusViewModelFactory
-import com.tecsup.campusgps.viewmodel.MapaViewModel
+import com.merino.campusgps.ui.PantallaMapa
+import com.merino.campusgps.viewmodel.CampusViewModelFactory
+import com.merino.campusgps.viewmodel.MapaViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
