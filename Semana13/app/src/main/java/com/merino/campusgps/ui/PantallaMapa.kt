@@ -1,5 +1,7 @@
 package com.merino.campusgps.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -9,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.merino.campusgps.model.UbicacionUi
 import com.merino.campusgps.viewmodel.MapaViewModel
 
@@ -22,11 +25,34 @@ fun PantallaMapa(vm: MapaViewModel) {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
         // TODO 1: si algún valor es true -> vm.buscar(); si no -> vm.permisoDenegado()
+        if (resultado.values.any { it }) {
+            vm.buscar()
+        } else {
+            vm.permisoDenegado()
+        }
     }
 
     fun alPulsar() {
         // TODO 2: ¿ya tienes FINE o COARSE? -> vm.buscar()
-        // TODO 3: si no -> lanzador.launch(arrayOf(FINE, COARSE))
+        val tieneFine = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val tieneCoarse = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (tieneFine || tieneCoarse) {
+            vm.buscar()
+        } else {
+
+    // TODO 3: si no -> lanzador.launch(arrayOf(FINE, COARSE))
+            lanzador.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
     }
 
     Scaffold(
