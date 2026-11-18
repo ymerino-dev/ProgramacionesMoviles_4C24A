@@ -80,6 +80,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 estado = estado,
                 lugares = lugares,
                 seleccionado = seleccionado,
+                tienePermiso = estado is UbicacionUi.Lista,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

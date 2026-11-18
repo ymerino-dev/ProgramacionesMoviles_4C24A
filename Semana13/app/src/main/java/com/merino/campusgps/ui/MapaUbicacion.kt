@@ -8,6 +8,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
@@ -20,13 +22,13 @@ fun MapaUbicacion(
     estado: UbicacionUi,
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
+    tienePermiso: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val camara = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
     }
 
-    // TODO 1: LaunchedEffect(estado): si es Lista, animar la cámara (zoom 16f)
     LaunchedEffect(estado) {
         if (estado is UbicacionUi.Lista) {
             val pos = LatLng(estado.posicion.latitud, estado.posicion.longitud)
@@ -34,7 +36,6 @@ fun MapaUbicacion(
         }
     }
 
-    // Paso 6: animar la cámara al lugar seleccionado cuando cambia `seleccionado`
     LaunchedEffect(seleccionado) {
         val item = lugares.find { it.lugar.id == seleccionado }
         if (item != null) {
@@ -43,8 +44,15 @@ fun MapaUbicacion(
         }
     }
 
-    GoogleMap(modifier = modifier, cameraPositionState = camara) {
-        // TODO 2: si el estado es Lista, un Marker "Estás aquí"
+    GoogleMap(
+        modifier = modifier,
+        cameraPositionState = camara,
+        properties = MapProperties(isMyLocationEnabled = tienePermiso),
+        uiSettings = MapUiSettings(
+            myLocationButtonEnabled = tienePermiso,
+            zoomControlsEnabled = true
+        )
+    ) {
         if (estado is UbicacionUi.Lista) {
             val pos = LatLng(estado.posicion.latitud, estado.posicion.longitud)
             Marker(
@@ -53,7 +61,6 @@ fun MapaUbicacion(
             )
         }
 
-        // TODO 3 (Paso 4): un Marker por cada lugar
         lugares.forEach { item ->
             val esSeleccionado = item.lugar.id == seleccionado
             val posLugar = LatLng(item.lugar.latitud, item.lugar.longitud)
