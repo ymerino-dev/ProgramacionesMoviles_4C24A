@@ -15,6 +15,7 @@ import com.merino.centrotareas.viewmodel.TareasViewModel
 @Composable
 fun PantallaTareas(viewModel: TareasViewModel) {
     val mensaje by viewModel.mensaje.collectAsState()
+    val progreso by viewModel.progreso.collectAsState()
     var toques by remember { mutableIntStateOf(0) }
     val azulTema = Color(0xFF1565C0)
 
@@ -54,6 +55,13 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    Text(
+                        text = "Tarea con progreso",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = azulTema,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
                     Button(
                         onClick = { toques++ },
                         colors = ButtonDefaults.buttonColors(containerColor = azulTema)
@@ -64,8 +72,17 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                         onClick = { viewModel.tareaLarga() },
                         colors = ButtonDefaults.buttonColors(containerColor = azulTema)
                     ) {
-                        Text("Tarea larga")
+                        Text("Iniciar")
                     }
+                    LinearProgressIndicator(
+                        progress = { progreso },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = azulTema
+                    )
+                    Text(
+                        text = "${(progreso * 100).toInt()} %",
+                        color = Color.Gray
+                    )
                     Text(
                         text = mensaje,
                         color = Color.Gray
