@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.merino.centrotareas.model.CargaUi
 import com.merino.centrotareas.model.PrimosUi
 import com.merino.centrotareas.viewmodel.TareasViewModel
 
@@ -25,6 +26,7 @@ fun PantallaTareas(viewModel: TareasViewModel) {
     val progreso by viewModel.progreso.collectAsState()
     val corriendo by viewModel.corriendo.collectAsState()
     val estadoPrimos by viewModel.primos.collectAsState()
+    val estadoCarga by viewModel.carga.collectAsState()
 
     var toques by rememberSaveable { mutableIntStateOf(0) }
     var numeroInput by rememberSaveable { mutableStateOf("500000") }
@@ -187,6 +189,84 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                         is PrimosUi.Cancelado -> {
                             Text(text = "Cancelado", color = Color.Gray)
                         }
+                    }
+                }
+            }
+
+            // --- TARJETA 3: DOS CARGAS ---
+            val cargando = estadoCarga is CargaUi.Cargando
+
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Dos cargas",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = azulTema,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(
+                            onClick = { viewModel.cargarUnaPorUna() },
+                            enabled = !cargando
+                        ) {
+                            Text("Una por una")
+                        }
+                        Button(
+                            onClick = { viewModel.cargarALaVez() },
+                            enabled = !cargando,
+                            colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                        ) {
+                            Text("A la vez")
+                        }
+                    }
+
+                    when (val estado = estadoCarga) {
+                        is CargaUi.Inicial -> {}
+                        is CargaUi.Cargando -> {
+                            CircularProgressIndicator(color = azulTema)
+                        }
+                        is CargaUi.Exito -> {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = "Modo: ${estado.modo}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1B5E20)
+                                )
+                                Text(
+                                    text = "Perfil: ${estado.perfil}",
+                                    color = Color(0xFF1B5E20)
+                                )
+                                Text(
+                                    text = "Pedidos: ${estado.pedidos}",
+                                    color = Color(0xFF1B5E20)
+                                )
+                                Text(
+                                    text = "Tiempo: ${estado.milisegundos} ms",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF2E7D32)
+                                )
+                            }
+                        }
+                        is CargaUi.Error -> {}
                     }
                 }
             }
