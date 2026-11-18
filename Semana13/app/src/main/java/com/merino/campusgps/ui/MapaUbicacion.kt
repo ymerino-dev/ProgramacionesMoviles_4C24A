@@ -1,23 +1,28 @@
 package com.merino.campusgps.ui
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color as AndroidColor
+import android.graphics.Paint
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -33,6 +38,29 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import com.merino.campusgps.model.LugarConDistancia
 import com.merino.campusgps.model.UbicacionUi
 import com.merino.campusgps.util.formatearDistancia
+
+// Genera un Bitmap circular limpio de 44x44 px con borde blanco grueso y centro azul (#1565C0)
+private fun crearBitmapPuntoAzul(): Bitmap {
+    val size = 44
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    val paintBorde = Paint().apply {
+        isAntiAlias = true
+        color = AndroidColor.WHITE
+        style = Paint.Style.FILL
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, paintBorde)
+
+    val paintCentro = Paint().apply {
+        isAntiAlias = true
+        color = AndroidColor.parseColor("#1565C0")
+        style = Paint.Style.FILL
+    }
+    canvas.drawCircle(size / 2f, size / 2f, (size / 2f) - 4f, paintCentro)
+
+    return bitmap
+}
 
 @Composable
 fun MapaUbicacion(
@@ -101,15 +129,16 @@ fun MapaUbicacion(
 
     // Actualización de capas (Overlays, MyLocationOverlay, Círculo de Radio, Marcadores)
     androidx.compose.runtime.SideEffect {
-        // COMENTARIO [Modo Oscuro OpenStreetMap]: Aplica TilesOverlay.INVERT_COLORS a los mosaicos del mapa si el tema es oscuro
         mapView.overlayManager.tilesOverlay?.setColorFilter(if (esModoOscuro) TilesOverlay.INVERT_COLORS else null)
-
         mapView.overlays.clear()
 
-        // 1. Activa el punto azul nativo solo cuando tienePermiso es true (UbicacionUi.Lista)
+        // 1. MyLocationOverlay con ícono circular personalizado (punto azul con borde blanco)
         if (tienePermiso) {
+            val customBitmap = crearBitmapPuntoAzul()
             val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView).apply {
                 enableMyLocation()
+                setPersonIcon(customBitmap)
+                setDirectionIcon(customBitmap)
             }
             mapView.overlays.add(myLocationOverlay)
         }
@@ -134,15 +163,29 @@ fun MapaUbicacion(
             mapView.overlays.add(hereMarker)
         }
 
-        // 3. Marcadores de los lugares de la lista
-        lugares.forEach { item ->
+        // 3. Marcadores de los lugares con tintes diferenciados:
+        // Verde (#2E7D32) para el más cercano (índice 0), Azul (#1565C0) para el seleccionado, Gris azulado (#78909C) para el resto
+        lugares.forEachIndexed { index, item ->
+            val esSeleccionado = item.lugar.id == seleccionado
+            val esMasCercano = index == 0 && item.metros != null
             val placePoint = GeoPoint(item.lugar.latitud, item.lugar.longitud)
             val textoDistancia = item.metros?.let { " • ${formatearDistancia(it)}" } ?: ""
+
+            val colorHex = when {
+                esMasCercano -> "#2E7D32"
+                esSeleccionado -> "#1565C0"
+                else -> "#78909C"
+            }
+
+            val markerDrawable = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)?.mutate()
+            markerDrawable?.setTint(AndroidColor.parseColor(colorHex))
 
             val marker = Marker(mapView).apply {
                 position = placePoint
                 title = item.lugar.nombre
                 subDescription = "${item.lugar.categoria}$textoDistancia"
+                icon = markerDrawable
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             }
             mapView.overlays.add(marker)
         }
@@ -156,9 +199,9 @@ fun MapaUbicacion(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Botón flotante para centrar la cámara en la ubicación del usuario
+        // SmallFloatingActionButton azul (#1565C0) con Icons.Rounded.MyLocation en la esquina inferior derecha
         if (estado is UbicacionUi.Lista) {
-            FloatingActionButton(
+            SmallFloatingActionButton(
                 onClick = {
                     val pos = estado.posicion
                     mapView.controller.animateTo(GeoPoint(pos.latitud, pos.longitud))
@@ -167,11 +210,11 @@ fun MapaUbicacion(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = Color(0xFF1565C0),
+                contentColor = Color.White
             ) {
                 Icon(
-                    imageVector = Icons.Default.LocationOn,
+                    imageVector = Icons.Rounded.MyLocation,
                     contentDescription = "Centrar en mi ubicación"
                 )
             }
