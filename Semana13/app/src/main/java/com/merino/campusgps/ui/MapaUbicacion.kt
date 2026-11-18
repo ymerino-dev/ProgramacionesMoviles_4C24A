@@ -1,5 +1,6 @@
 package com.merino.campusgps.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import com.merino.campusgps.model.LugarConDistancia
@@ -39,7 +41,8 @@ fun MapaUbicacion(
     seleccionado: Int?,
     tienePermiso: Boolean = false,
     radioMetros: Double = 200.0,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    esModoOscuro: Boolean = isSystemInDarkTheme()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -98,6 +101,9 @@ fun MapaUbicacion(
 
     // Actualización de capas (Overlays, MyLocationOverlay, Círculo de Radio, Marcadores)
     androidx.compose.runtime.SideEffect {
+        // COMENTARIO [Modo Oscuro OpenStreetMap]: Aplica TilesOverlay.INVERT_COLORS a los mosaicos del mapa si el tema es oscuro
+        mapView.overlayManager.tilesOverlay?.setColorFilter(if (esModoOscuro) TilesOverlay.INVERT_COLORS else null)
+
         mapView.overlays.clear()
 
         // 1. Activa el punto azul nativo solo cuando tienePermiso es true (UbicacionUi.Lista)
