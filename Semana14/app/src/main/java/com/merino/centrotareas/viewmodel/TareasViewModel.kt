@@ -6,8 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.merino.centrotareas.data.TareasRepository
 import com.merino.centrotareas.model.CargaUi
 import com.merino.centrotareas.model.PrimosUi
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +64,30 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     // ---- Contar primos (paso 5) ----
     private val _primos = MutableStateFlow<PrimosUi>(PrimosUi.Inicial)
     val primos: StateFlow<PrimosUi> = _primos.asStateFlow()
+
+    private var trabajoPrimos: Job? = null
+
+    fun contar(hasta: Int) {
+        if (hasta < 2) return
+        trabajoPrimos?.cancel()
+
+        trabajoPrimos = viewModelScope.launch {
+            _primos.value = PrimosUi.Calculando
+            val inicio = System.currentTimeMillis()
+            try {
+                val total = repo.contarPrimos(hasta)
+                val duracion = System.currentTimeMillis() - inicio
+                _primos.value = PrimosUi.Listo(cantidad = total, milisegundos = duracion)
+            } catch (e: CancellationException) {
+                _primos.value = PrimosUi.Cancelado
+                throw e
+            }
+        }
+    }
+
+    fun cancelarPrimos() {
+        trabajoPrimos?.cancel()
+    }
 
     // TODO Paso 5: fun contar(hasta: Int) y fun cancelarPrimos()
 
