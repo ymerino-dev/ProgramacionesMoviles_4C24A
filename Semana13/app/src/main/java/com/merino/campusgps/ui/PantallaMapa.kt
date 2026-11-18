@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.merino.campusgps.model.UbicacionUi
@@ -19,9 +20,9 @@ import com.merino.campusgps.viewmodel.MapaViewModel
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
-
     val lugares by vm.lugares.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
+    val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -93,19 +94,30 @@ fun PantallaMapa(vm: MapaViewModel) {
                 Text("Obtener mi ubicación")
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             when (val e = estado) {
                 is UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
                 is UbicacionUi.Buscando -> CircularProgressIndicator()
                 is UbicacionUi.Lista -> {
-                    Text("Latitud: ${e.posicion.latitud}")
-                    Text("Longitud: ${e.posicion.longitud}")
+                    Text(
+                        text = "Lat: ${e.posicion.latitud} | Lon: ${e.posicion.longitud}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    masCercano?.let { cercano ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Más cercano: ${cercano.nombre}",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
                 is UbicacionUi.Error -> {
-                    Text(
-                        text = e.mensaje,
-                        color = MaterialTheme.colorScheme.error
+                    MensajeError(
+                        mensaje = e.mensaje,
+                        onReintentar = { alPulsar() }
                     )
                 }
             }
