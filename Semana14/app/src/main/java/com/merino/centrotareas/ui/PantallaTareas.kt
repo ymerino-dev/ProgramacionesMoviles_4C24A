@@ -61,10 +61,10 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                         Text("Tócame: $toques")
                     }
                     Button(
-                        onClick = { viewModel.tareaLargaMala() },
+                        onClick = { viewModel.tareaLarga() },
                         colors = ButtonDefaults.buttonColors(containerColor = azulTema)
                     ) {
-                        Text("Tarea larga (MAL)")
+                        Text("Tarea larga")
                     }
                     Text(
                         text = mensaje,
