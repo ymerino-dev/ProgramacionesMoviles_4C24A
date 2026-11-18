@@ -1,19 +1,25 @@
 package com.merino.centrotareas.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -37,12 +43,17 @@ fun PantallaTareas(viewModel: TareasViewModel) {
     val historialTiempos by viewModel.historialTiempos.collectAsState()
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-    val categorias = listOf("Progreso", "Primos", "Cargas", "Historial")
+    val categorias: List<Triple<String, ImageVector, String>> = listOf(
+        Triple("Progreso", Icons.Rounded.Speed, "Progreso"),
+        Triple("Primos", Icons.Rounded.Calculate, "Primos"),
+        Triple("Cargas", Icons.Rounded.SyncAlt, "Cargas"),
+        Triple("Historial", Icons.Rounded.History, "Historial")
+    )
 
     val azulTema = Color(0xFF1565C0)
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FA),
+        containerColor = Color(0xFFF8FAFC),
         topBar = {
             TopAppBar(
                 title = { Text("CentroTareas", fontWeight = FontWeight.Bold) },
@@ -58,20 +69,30 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // --- MENÚ SUPERIOR DE SELECCIÓN CON PRIMARYTABROW ---
+            // --- 1. NAVEGACIÓN SUPERIOR CON ÍCONOS Y PESTAÑAS ESTILIZADAS ---
             PrimaryTabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = Color.White,
                 contentColor = azulTema
             ) {
-                categorias.forEachIndexed { index, title ->
+                categorias.forEachIndexed { index, cat ->
+                    val title = cat.first
+                    val icon = cat.second
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
+                        icon = {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = title,
+                                tint = if (selectedTabIndex == index) azulTema else Color(0xFF64748B)
+                            )
+                        },
                         text = {
                             Text(
                                 text = title,
-                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium,
+                                color = if (selectedTabIndex == index) azulTema else Color(0xFF64748B)
                             )
                         }
                     )
@@ -123,6 +144,87 @@ fun PantallaTareas(viewModel: TareasViewModel) {
 }
 
 @Composable
+private fun BannerEducativo(
+    titulo: String,
+    descripcion: String,
+    icono: ImageVector,
+    chips: List<String>,
+    azulTema: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+        border = BorderStroke(1.dp, Color(0xFFBBDEFB)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    modifier = Modifier.size(40.dp),
+                    tonalElevation = 2.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icono,
+                            contentDescription = null,
+                            tint = azulTema,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = titulo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = azulTema
+                    )
+                    Text(
+                        text = descripcion,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF334155)
+                    )
+                }
+            }
+
+            // Badges técnicos tipo píldora
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                chips.forEach { chip ->
+                    Surface(
+                        shape = RoundedCornerShape(50.dp),
+                        color = Color.White.copy(alpha = 0.8f),
+                        border = BorderStroke(1.dp, azulTema.copy(alpha = 0.3f))
+                    ) {
+                        Text(
+                            text = chip,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = azulTema,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SeccionProgreso(
     progreso: Float,
     corriendo: Boolean,
@@ -139,79 +241,102 @@ private fun SeccionProgreso(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        BannerEducativo(
+            titulo = "Emisión de Progreso con Flow",
+            descripcion = "Ejecuta una tarea reactiva de 100 pasos desde el Repository emitiendo valores mediante Flow en Dispatchers.Default sin bloquear la UI.",
+            icono = Icons.Rounded.Speed,
+            chips = listOf("Flow", "Dispatchers.Default", "StateFlow"),
+            azulTema = azulTema
+        )
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = "Prueba: Emisión de Progreso con Flow",
-                    fontWeight = FontWeight.Bold,
-                    color = azulTema
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Ejecuta una tarea simulada de 100 pasos desde el Repository emitiendo valores progresivos mediante Flow en Dispatchers.Default sin bloquear el hilo UI.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
-
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Tarea con progreso",
+                    text = "Control de Tarea Reactiva",
                     style = MaterialTheme.typography.titleMedium,
                     color = azulTema,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
                 Button(
                     onClick = { toques++ },
-                    colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
                 ) {
-                    Text("Tócame: $toques")
+                    Icon(Icons.Rounded.TouchApp, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Tócame (Prueba de UI): $toques", fontWeight = FontWeight.SemiBold)
                 }
 
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = onIniciar,
                         enabled = !corriendo,
-                        colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                        colors = ButtonDefaults.buttonColors(containerColor = azulTema),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("Iniciar")
+                        Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Iniciar", fontWeight = FontWeight.SemiBold)
                     }
                     OutlinedButton(
                         onClick = onCancelar,
-                        enabled = corriendo
+                        enabled = corriendo,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("Cancelar")
+                        Icon(Icons.Rounded.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Cancelar", fontWeight = FontWeight.SemiBold)
                     }
                 }
 
-                LinearProgressIndicator(
-                    progress = { progreso },
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    color = azulTema
-                )
-
-                Text(text = "${(progreso * 100).toInt()} %", color = Color.Gray)
-                Text(text = mensaje, color = Color.Gray)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { progreso },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp),
+                        color = azulTema,
+                        trackColor = Color(0xFFE2E8F0)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = mensaje, style = MaterialTheme.typography.bodySmall, color = Color(0xFF64748B))
+                        Text(text = "${(progreso * 100).toInt()} %", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = azulTema)
+                    }
+                }
             }
         }
     }
@@ -233,42 +358,33 @@ private fun SeccionPrimos(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        BannerEducativo(
+            titulo = "Cálculo Intensivo en CPU con Progreso",
+            descripcion = "Busca números primos en Dispatchers.Default reportando el porcentaje de avance cada 1% con capacidad de cancelación instantánea mediante ensureActive().",
+            icono = Icons.Rounded.Calculate,
+            chips = listOf("CPU-Intensive", "ensureActive()", "Cancelable"),
+            azulTema = azulTema
+        )
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = "Prueba: Primos con Progreso en Tiempo Real",
-                    fontWeight = FontWeight.Bold,
-                    color = azulTema
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Calcula números primos en Dispatchers.Default reportando el porcentaje de avance cada 1% con capacidad de cancelación instantánea.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
-
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     text = "Contar números primos",
                     style = MaterialTheme.typography.titleMedium,
                     color = azulTema,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
@@ -280,10 +396,14 @@ private fun SeccionPrimos(
                     label = { Text("Hasta el número") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Button(
                         onClick = {
                             val n = numeroInput.toIntOrNull()
@@ -292,15 +412,27 @@ private fun SeccionPrimos(
                             }
                         },
                         enabled = !calculando,
-                        colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                        colors = ButtonDefaults.buttonColors(containerColor = azulTema),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("Contar")
+                        Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Contar", fontWeight = FontWeight.SemiBold)
                     }
                     OutlinedButton(
                         onClick = onCancelar,
-                        enabled = calculando
+                        enabled = calculando,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("Cancelar")
+                        Icon(Icons.Rounded.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Cancelar", fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -314,12 +446,16 @@ private fun SeccionPrimos(
                         ) {
                             LinearProgressIndicator(
                                 progress = { estadoPrimos.progreso },
-                                modifier = Modifier.fillMaxWidth(),
-                                color = azulTema
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp),
+                                color = azulTema,
+                                trackColor = Color(0xFFE2E8F0)
                             )
                             Text(
-                                text = "${(estadoPrimos.progreso * 100).toInt()} %",
-                                color = Color.Gray,
+                                text = "Calculando primos... ${(estadoPrimos.progreso * 100).toInt()} %",
+                                color = Color(0xFF64748B),
+                                style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -329,23 +465,26 @@ private fun SeccionPrimos(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .border(1.dp, Color(0xFFC8E6C9), RoundedCornerShape(12.dp))
+                                .padding(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
                                 text = "Primos hasta $numeroInput: ${estadoPrimos.cantidad}",
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1B5E20)
+                                color = Color(0xFF1B5E20),
+                                style = MaterialTheme.typography.titleSmall
                             )
                             Text(
-                                text = "Tiempo: ${estadoPrimos.milisegundos} ms",
+                                text = "Tiempo de ejecución: ${estadoPrimos.milisegundos} ms",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF2E7D32)
                             )
                         }
                     }
                     is PrimosUi.Cancelado -> {
-                        Text(text = "Cancelado", color = Color.Gray)
+                        Text(text = "Cálculo cancelado por el usuario", color = Color(0xFF64748B), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -374,42 +513,33 @@ private fun SeccionCargas(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        BannerEducativo(
+            titulo = "Concurrencia, Timeout y Reintentos",
+            descripcion = "Compara cargas secuenciales vs. paralelas con async/await, reintentos automáticos con espera exponencial y control de timeout.",
+            icono = Icons.Rounded.SyncAlt,
+            chips = listOf("async / await", "withTimeout", "Reintento x3"),
+            azulTema = azulTema
+        )
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = "Prueba: Concurrencia, Timeout y Reintentos",
-                    fontWeight = FontWeight.Bold,
-                    color = azulTema
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Compara cargas secuenciales vs. paralelas con reintentos automáticos (espera creciente), control de timeout y tabla comparativa de tiempos.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
-
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     text = "Gestión de Cargas Asíncronas",
                     style = MaterialTheme.typography.titleMedium,
                     color = azulTema,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
@@ -417,18 +547,18 @@ private fun SeccionCargas(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF1F3F4),
-                    tonalElevation = 1.dp
+                    color = Color(0xFFF8FAFC),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
                             text = "Condiciones de prueba",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.DarkGray
+                            color = Color(0xFF334155)
                         )
 
                         Row(
@@ -436,7 +566,7 @@ private fun SeccionCargas(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Simular error de red", style = MaterialTheme.typography.bodyMedium)
+                            Text(text = "Simular error de red (IOException)", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF475569))
                             Switch(
                                 checked = simularError,
                                 onCheckedChange = onCambiarSimularError,
@@ -449,7 +579,7 @@ private fun SeccionCargas(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Forzar Timeout (2s)", style = MaterialTheme.typography.bodyMedium)
+                            Text(text = "Forzar Timeout (2s)", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF475569))
                             Switch(
                                 checked = forzarTimeout,
                                 onCheckedChange = onCambiarForzarTimeout,
@@ -459,7 +589,7 @@ private fun SeccionCargas(
                     }
                 }
 
-                // --- BOTONES DE ACCIÓN ---
+                // --- BOTONES DE ACCIÓN EQUILIBRADOS ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -467,17 +597,27 @@ private fun SeccionCargas(
                     OutlinedButton(
                         onClick = onCargarUnaPorUna,
                         enabled = !cargando,
-                        modifier = Modifier.weight(1f)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("Una por una")
+                        Icon(Icons.Rounded.Timer, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Una por una", fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onCargarALaVez,
                         enabled = !cargando,
                         colors = ButtonDefaults.buttonColors(containerColor = azulTema),
-                        modifier = Modifier.weight(1f)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
-                        Text("A la vez")
+                        Icon(Icons.Rounded.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("A la vez", fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -487,13 +627,15 @@ private fun SeccionCargas(
                     is CargaUi.Cargando -> {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(vertical = 8.dp)
                         ) {
                             CircularProgressIndicator(color = azulTema)
                             Text(
                                 text = estado.mensaje,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
+                                color = Color(0xFF64748B),
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -502,27 +644,24 @@ private fun SeccionCargas(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
-                                .padding(12.dp),
+                                .border(1.dp, Color(0xFFC8E6C9), RoundedCornerShape(12.dp))
+                                .padding(14.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
                                 text = "Modo: ${estado.modo}",
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1B5E20)
+                                color = Color(0xFF1B5E20),
+                                style = MaterialTheme.typography.titleSmall
                             )
+                            Text(text = "Perfil: ${estado.perfil}", color = Color(0xFF1B5E20), style = MaterialTheme.typography.bodyMedium)
+                            Text(text = "Pedidos: ${estado.pedidos}", color = Color(0xFF1B5E20), style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = "Perfil: ${estado.perfil}",
-                                color = Color(0xFF1B5E20)
-                            )
-                            Text(
-                                text = "Pedidos: ${estado.pedidos}",
-                                color = Color(0xFF1B5E20)
-                            )
-                            Text(
-                                text = "Tiempo: ${estado.milisegundos} ms",
+                                text = "Tiempo total: ${estado.milisegundos} ms",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF2E7D32)
+                                color = Color(0xFF2E7D32),
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
@@ -534,34 +673,40 @@ private fun SeccionCargas(
                                     MaterialTheme.colorScheme.errorContainer,
                                     RoundedCornerShape(12.dp)
                                 )
-                                .padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .padding(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
                                 text = estado.mensaje,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Bold
                             )
-                        }
-                        OutlinedButton(onClick = onCargarALaVez) {
-                            Text("Reintentar")
+                            OutlinedButton(
+                                onClick = onCargarALaVez,
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Reintentar operación")
+                            }
                         }
                     }
                 }
             }
         }
 
-        // --- TABLA COMPARATIVA DE TIEMPOS ---
-        OutlinedCard(
+        // --- TABLA COMPARATIVA DE TIEMPOS PULIDA ---
+        Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -572,11 +717,18 @@ private fun SeccionCargas(
                         text = "Tabla comparativa de tiempos",
                         style = MaterialTheme.typography.titleMedium,
                         color = azulTema,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
                     if (historialTiempos.isNotEmpty()) {
-                        TextButton(onClick = onLimpiarTabla) {
-                            Text("Limpiar tabla", color = MaterialTheme.colorScheme.error)
+                        IconButton(
+                            onClick = onLimpiarTabla,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.DeleteSweep,
+                                contentDescription = "Limpiar tabla",
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -585,61 +737,95 @@ private fun SeccionCargas(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                            .padding(vertical = 24.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No hay registros de tiempo aún.\nRealiza una carga exitosa para comparar.",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodySmall
+                            text = "No hay registros de tiempo aún.\nEjecuta cargas para poblar la tabla.",
+                            color = Color(0xFF94A3B8),
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
                         )
                     }
                 } else {
-                    // Cabecera de la tabla (3 columnas: Intento, Modo, Tiempo ms)
+                    // Cabecera sombreada
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFEEEEEE),
+                        color = Color(0xFFF1F5F9),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Intento", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            Text(text = "Modo", fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
-                            Text(text = "Tiempo", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+                            Text(text = "#", fontWeight = FontWeight.Bold, color = Color(0xFF475569), modifier = Modifier.weight(0.8f))
+                            Text(text = "Modo de Carga", fontWeight = FontWeight.Bold, color = Color(0xFF475569), modifier = Modifier.weight(2.2f))
+                            Text(text = "Tiempo", fontWeight = FontWeight.Bold, color = Color(0xFF475569), modifier = Modifier.weight(1.2f), textAlign = TextAlign.End)
                         }
                     }
 
-                    // Filas de la tabla
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 250.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                            .heightIn(max = 240.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         items(historialTiempos) { registro ->
+                            val esParalelo = registro.modo.contains("A la vez", ignoreCase = true)
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                color = Color(0xFFF9F9F9),
-                                shape = RoundedCornerShape(6.dp)
+                                color = Color(0xFFFAFAFA),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(0.5.dp, Color(0xFFE2E8F0))
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = "#${registro.intento}", modifier = Modifier.weight(1f))
-                                    Text(text = registro.modo, modifier = Modifier.weight(2f), fontWeight = FontWeight.Medium)
+                                    Text(
+                                        text = "#${registro.intento}",
+                                        modifier = Modifier.weight(0.8f),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF64748B),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Row(
+                                        modifier = Modifier.weight(2.2f),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = registro.modo,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF1E293B)
+                                        )
+                                        if (esParalelo) {
+                                            Surface(
+                                                shape = RoundedCornerShape(4.dp),
+                                                color = Color(0xFFDCFCE7)
+                                            ) {
+                                                Text(
+                                                    text = "Paralelo",
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = Color(0xFF166534),
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
                                     Text(
                                         text = "${registro.milisegundos} ms",
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.weight(1.2f),
                                         textAlign = TextAlign.End,
-                                        color = Color(0xFF2E7D32),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF059669),
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -662,34 +848,25 @@ private fun SeccionHistorial(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        BannerEducativo(
+            titulo = "Historial de Resultados",
+            descripcion = "Registro cronológico de todas las tareas ejecutadas, cálculos de primos y cargas de red completadas o canceladas durante la sesión.",
+            icono = Icons.Rounded.History,
+            chips = listOf("Log", "StateFlow", "Sesión Actual"),
+            azulTema = azulTema
+        )
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = "Historial de Resultados Guardados",
-                    fontWeight = FontWeight.Bold,
-                    color = azulTema
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Registro de resultados obtenidos tras completar pruebas de progreso, cálculos de primos o cargas de datos.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray
-                )
-            }
-        }
-
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
@@ -701,11 +878,18 @@ private fun SeccionHistorial(
                         text = "Resultados guardados",
                         style = MaterialTheme.typography.titleMedium,
                         color = azulTema,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
                     if (historial.isNotEmpty()) {
-                        TextButton(onClick = onLimpiar) {
-                            Text("Limpiar", color = MaterialTheme.colorScheme.error)
+                        IconButton(
+                            onClick = onLimpiar,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.DeleteSweep,
+                                contentDescription = "Limpiar historial",
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -714,13 +898,14 @@ private fun SeccionHistorial(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 24.dp),
+                            .padding(vertical = 32.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No hay registros guardados en el historial todavía.\nEjecuta tareas en las pestañas anteriores para registrarlas.",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "No hay registros guardados en el historial todavía.\nEjecuta pruebas en las otras pestañas para registrarlas.",
+                            color = Color(0xFF94A3B8),
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
                         )
                     }
                 } else {
@@ -731,15 +916,17 @@ private fun SeccionHistorial(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(historial) { item ->
-                            Card(
+                            Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                                color = Color(0xFFF8FAFC),
+                                shape = RoundedCornerShape(10.dp),
+                                border = BorderStroke(0.5.dp, Color(0xFFE2E8F0))
                             ) {
                                 Text(
                                     text = item,
-                                    modifier = Modifier.padding(12.dp),
+                                    modifier = Modifier.padding(14.dp),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.DarkGray
+                                    color = Color(0xFF334155)
                                 )
                             }
                         }
