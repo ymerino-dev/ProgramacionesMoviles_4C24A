@@ -47,8 +47,9 @@ fun MapaUbicacion(
     modifier: Modifier = Modifier,
     esModoOscuro: Boolean = isSystemInDarkTheme()
 ) {
+    // COMENTARIO: Centra la cámara inicialmente en las coordenadas del Campus en Lima (-12.0464, -77.0428)
     val camara = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
+        position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 15.5f)
     }
 
     // COMENTARIO [MapStyleOptions]: Se carga el estilo oscuro dinámicamente según el tema del sistema
