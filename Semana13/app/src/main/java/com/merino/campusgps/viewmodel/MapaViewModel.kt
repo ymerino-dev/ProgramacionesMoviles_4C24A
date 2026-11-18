@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.merino.campusgps.data.GpsApagadoException
 import com.merino.campusgps.data.LugaresRepository
+import com.merino.campusgps.data.PreferenciaRepository
 import com.merino.campusgps.data.UbicacionRepository
 import com.merino.campusgps.model.Lugar
 import com.merino.campusgps.model.LugarConDistancia
@@ -21,7 +22,8 @@ import kotlinx.coroutines.launch
 
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
-    private val lugaresRepo: LugaresRepository
+    private val lugaresRepo: LugaresRepository,
+    private val preferenciaRepo: PreferenciaRepository
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
@@ -47,6 +49,17 @@ class MapaViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    init {
+        // COMENTARIO [DataStore]: Recupera el último lugar seleccionado guardado en DataStore al iniciar la app
+        viewModelScope.launch {
+            preferenciaRepo.ultimoLugarId.collect { idGuardado ->
+                if (idGuardado != null && _seleccionado.value == null) {
+                    _seleccionado.value = idGuardado
+                }
+            }
+        }
+    }
+
     fun buscar() {
         if (!ubicacionRepo.playServicesDisponible()) {
             _estado.value = UbicacionUi.Error(
@@ -67,6 +80,8 @@ class MapaViewModel(
         }
     }
 
+    // COMENTARIO [Cálculo de Distancia y Radio]: Calcula la distancia en metros entre el usuario y cada lugar,
+    // evaluando si se encuentra dentro del radio actual seleccionado (100m, 200m, 500m).
     private fun actualizarDistanciasYEstado(posicion: Posicion) {
         listaCompletaLugares = lugaresRepo.obtenerLugares()
             .map { lugar ->
@@ -79,6 +94,7 @@ class MapaViewModel(
         aplicarFiltros(posicion)
     }
 
+    // COMENTARIO [Filtrado por Categoría]: Filtra la lista completa de lugares según la categoría elegida
     private fun aplicarFiltros(posicion: Posicion?) {
         val filtrados = if (categoriaActual.equals("Todas", ignoreCase = true)) {
             listaCompletaLugares
@@ -122,8 +138,13 @@ class MapaViewModel(
         )
     }
 
+    // COMENTARIO [Persistencia DataStore]: Selecciona/desselecciona un lugar y persiste el ID en DataStore
     fun seleccionar(id: Int?) {
-        _seleccionado.value = if (_seleccionado.value == id) null else id
+        val nuevoId = if (_seleccionado.value == id) null else id
+        _seleccionado.value = nuevoId
+        viewModelScope.launch {
+            preferenciaRepo.guardarUltimoLugarId(nuevoId)
+        }
     }
 
     private fun errorDe(e: Throwable): UbicacionUi.Error = when (e) {
