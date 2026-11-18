@@ -6,14 +6,19 @@ import androidx.lifecycle.viewModelScope
 import com.merino.centrotareas.data.TareasRepository
 import com.merino.centrotareas.model.CargaUi
 import com.merino.centrotareas.model.PrimosUi
+import com.merino.centrotareas.model.RegistroTiempo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,6 +36,14 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     fun limpiarHistorial() {
         _historial.value = emptyList()
+    }
+
+    // ---- Tabla comparativa de tiempos ----
+    private val _historialTiempos = MutableStateFlow<List<RegistroTiempo>>(emptyList())
+    val historialTiempos: StateFlow<List<RegistroTiempo>> = _historialTiempos.asStateFlow()
+
+    fun limpiarHistorialTiempos() {
+        _historialTiempos.value = emptyList()
     }
 
     // ---- Tarea con progreso (pasos 1 a 4) ----
@@ -111,34 +124,81 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajoPrimos?.cancel()
     }
 
-    // ---- Dos cargas (pasos 6 y 7) ----
+    // ---- Dos cargas (pasos 6 y 7, y resiliencia) ----
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
 
     private val _simularError = MutableStateFlow(false)
     val simularError: StateFlow<Boolean> = _simularError.asStateFlow()
 
+    private val _forzarTimeout = MutableStateFlow(false)
+    val forzarTimeout: StateFlow<Boolean> = _forzarTimeout.asStateFlow()
+
     fun cambiarSimularError(valor: Boolean) {
         _simularError.value = valor
+    }
+
+    fun cambiarForzarTimeout(valor: Boolean) {
+        _forzarTimeout.value = valor
+    }
+
+    private suspend fun <T> ejecutarConReintentos(
+        maxIntentos: Int = 3,
+        bloque: suspend (intento: Int) -> T
+    ): T {
+        var intentoActual = 1
+        while (true) {
+            try {
+                return bloque(intentoActual)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: TimeoutCancellationException) {
+                throw e
+            } catch (e: IOException) {
+                if (intentoActual >= maxIntentos) {
+                    throw e
+                }
+                _carga.value = CargaUi.Cargando("Reintentando (intento ${intentoActual + 1}/$maxIntentos)...")
+                delay(500L * intentoActual)
+                intentoActual++
+            } catch (e: Exception) {
+                throw e
+            }
+        }
     }
 
     fun cargarUnaPorUna() {
         if (_carga.value is CargaUi.Cargando) return
 
         viewModelScope.launch {
-            _carga.value = CargaUi.Cargando
+            _carga.value = CargaUi.Cargando("Cargando perfil y pedidos...")
+            val timeoutMillis = if (_forzarTimeout.value) 2000L else 6000L
             val inicio = System.currentTimeMillis()
             try {
-                val perfil = repo.cargarPerfil()
-                val pedidos = repo.cargarPedidos(_simularError.value)
+                var intentoFinal = 1
+                val (perfil, pedidos) = withTimeout(timeoutMillis) {
+                    val perfilRes = repo.cargarPerfil()
+                    val pedidosRes = ejecutarConReintentos(3) { intento ->
+                        intentoFinal = intento
+                        repo.cargarPedidos(_simularError.value)
+                    }
+                    Pair(perfilRes, pedidosRes)
+                }
                 val duracion = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito("Una por una", perfil, pedidos.size, duracion)
-                agregarAlHistorial("Cargas (Una por una): Éxito en $duracion ms")
+                agregarAlHistorial("Carga (Una por una): Éxito en $duracion ms (Intento $intentoFinal)")
+
+                val nuevoRegistro = RegistroTiempo(intento = intentoFinal, modo = "Una por una", milisegundos = duracion)
+                _historialTiempos.value = _historialTiempos.value + nuevoRegistro
+
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: TimeoutCancellationException) {
+                _carga.value = CargaUi.Error("Tardó demasiado")
+                agregarAlHistorial("Carga (Una por una): Error - Tardó demasiado")
             } catch (e: Exception) {
                 _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
-                agregarAlHistorial("Cargas (Una por una): Error (${e.message})")
+                agregarAlHistorial("Carga (Una por una): Error - ${e.message}")
             }
         }
     }
@@ -147,22 +207,38 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         if (_carga.value is CargaUi.Cargando) return
 
         viewModelScope.launch {
-            _carga.value = CargaUi.Cargando
+            _carga.value = CargaUi.Cargando("Cargando en paralelo...")
+            val timeoutMillis = if (_forzarTimeout.value) 2000L else 6000L
             val inicio = System.currentTimeMillis()
             try {
-                val (perfil, pedidos) = coroutineScope {
-                    val a = async { repo.cargarPerfil() }
-                    val b = async { repo.cargarPedidos(_simularError.value) }
-                    Pair(a.await(), b.await())
+                var intentoFinal = 1
+                val (perfil, pedidos) = withTimeout(timeoutMillis) {
+                    coroutineScope {
+                        val a = async { repo.cargarPerfil() }
+                        val b = async {
+                            ejecutarConReintentos(3) { intento ->
+                                intentoFinal = intento
+                                repo.cargarPedidos(_simularError.value)
+                            }
+                        }
+                        Pair(a.await(), b.await())
+                    }
                 }
                 val duracion = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, duracion)
-                agregarAlHistorial("Cargas (A la vez): Éxito en $duracion ms")
+                agregarAlHistorial("Carga (A la vez): Éxito en $duracion ms (Intento $intentoFinal)")
+
+                val nuevoRegistro = RegistroTiempo(intento = intentoFinal, modo = "A la vez", milisegundos = duracion)
+                _historialTiempos.value = _historialTiempos.value + nuevoRegistro
+
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: TimeoutCancellationException) {
+                _carga.value = CargaUi.Error("Tardó demasiado")
+                agregarAlHistorial("Carga (A la vez): Error - Tardó demasiado")
             } catch (e: Exception) {
                 _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
-                agregarAlHistorial("Cargas (A la vez): Error (${e.message})")
+                agregarAlHistorial("Carga (A la vez): Error - ${e.message}")
             }
         }
     }

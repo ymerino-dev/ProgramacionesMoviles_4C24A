@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.merino.centrotareas.model.CargaUi
 import com.merino.centrotareas.model.PrimosUi
+import com.merino.centrotareas.model.RegistroTiempo
 import com.merino.centrotareas.viewmodel.TareasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,7 +32,9 @@ fun PantallaTareas(viewModel: TareasViewModel) {
     val estadoPrimos by viewModel.primos.collectAsState()
     val estadoCarga by viewModel.carga.collectAsState()
     val simularError by viewModel.simularError.collectAsState()
+    val forzarTimeout by viewModel.forzarTimeout.collectAsState()
     val historial by viewModel.historial.collectAsState()
+    val historialTiempos by viewModel.historialTiempos.collectAsState()
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     val categorias = listOf("Progreso", "Primos", "Cargas", "Historial")
@@ -98,10 +102,14 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                     2 -> SeccionCargas(
                         estadoCarga = estadoCarga,
                         simularError = simularError,
+                        forzarTimeout = forzarTimeout,
+                        historialTiempos = historialTiempos,
                         azulTema = azulTema,
                         onCambiarSimularError = { viewModel.cambiarSimularError(it) },
+                        onCambiarForzarTimeout = { viewModel.cambiarForzarTimeout(it) },
                         onCargarUnaPorUna = { viewModel.cargarUnaPorUna() },
-                        onCargarALaVez = { viewModel.cargarALaVez() }
+                        onCargarALaVez = { viewModel.cargarALaVez() },
+                        onLimpiarTabla = { viewModel.limpiarHistorialTiempos() }
                     )
                     3 -> SeccionHistorial(
                         historial = historial,
@@ -349,10 +357,14 @@ private fun SeccionPrimos(
 private fun SeccionCargas(
     estadoCarga: CargaUi,
     simularError: Boolean,
+    forzarTimeout: Boolean,
+    historialTiempos: List<RegistroTiempo>,
     azulTema: Color,
     onCambiarSimularError: (Boolean) -> Unit,
+    onCambiarForzarTimeout: (Boolean) -> Unit,
     onCargarUnaPorUna: () -> Unit,
-    onCargarALaVez: () -> Unit
+    onCargarALaVez: () -> Unit,
+    onLimpiarTabla: () -> Unit
 ) {
     val cargando = estadoCarga is CargaUi.Cargando
 
@@ -368,13 +380,13 @@ private fun SeccionCargas(
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "Prueba: Concurrencia y Manejo de Errores",
+                    text = "Prueba: Concurrencia, Timeout y Reintentos",
                     fontWeight = FontWeight.Bold,
                     color = azulTema
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Compara peticiones secuenciales vs. asíncronas en paralelo (async/await) gestionando errores de I/O y la opción de reintento.",
+                    text = "Compara cargas secuenciales vs. paralelas con reintentos automáticos (espera creciente), control de timeout y tabla comparativa de tiempos.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )
@@ -391,49 +403,99 @@ private fun SeccionCargas(
                     .fillMaxWidth()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Dos cargas",
+                    text = "Gestión de Cargas Asíncronas",
                     style = MaterialTheme.typography.titleMedium,
                     color = azulTema,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
-                Row(
+                // --- CONTENEDOR SECUNDARIO: CONDICIONES DE PRUEBA ---
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFF1F3F4),
+                    tonalElevation = 1.dp
                 ) {
-                    Switch(
-                        checked = simularError,
-                        onCheckedChange = onCambiarSimularError,
-                        enabled = !cargando
-                    )
-                    Text(text = "Simular error")
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Condiciones de prueba",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.DarkGray
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Simular error de red", style = MaterialTheme.typography.bodyMedium)
+                            Switch(
+                                checked = simularError,
+                                onCheckedChange = onCambiarSimularError,
+                                enabled = !cargando
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Forzar Timeout (2s)", style = MaterialTheme.typography.bodyMedium)
+                            Switch(
+                                checked = forzarTimeout,
+                                onCheckedChange = onCambiarForzarTimeout,
+                                enabled = !cargando
+                            )
+                        }
+                    }
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                // --- BOTONES DE ACCIÓN ---
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     OutlinedButton(
                         onClick = onCargarUnaPorUna,
-                        enabled = !cargando
+                        enabled = !cargando,
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text("Una por una")
                     }
                     Button(
                         onClick = onCargarALaVez,
                         enabled = !cargando,
-                        colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                        colors = ButtonDefaults.buttonColors(containerColor = azulTema),
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text("A la vez")
                     }
                 }
 
+                // --- ESTADO DE CARGA / RESULTADO ---
                 when (val estado = estadoCarga) {
                     is CargaUi.Inicial -> {}
                     is CargaUi.Cargando -> {
-                        CircularProgressIndicator(color = azulTema)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            CircularProgressIndicator(color = azulTema)
+                            Text(
+                                text = estado.mensaje,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
                     }
                     is CargaUi.Exito -> {
                         Column(
@@ -483,6 +545,105 @@ private fun SeccionCargas(
                         }
                         OutlinedButton(onClick = onCargarALaVez) {
                             Text("Reintentar")
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- TABLA COMPARATIVA DE TIEMPOS ---
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Tabla comparativa de tiempos",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = azulTema,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (historialTiempos.isNotEmpty()) {
+                        TextButton(onClick = onLimpiarTabla) {
+                            Text("Limpiar tabla", color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+
+                if (historialTiempos.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No hay registros de tiempo aún.\nRealiza una carga exitosa para comparar.",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                } else {
+                    // Cabecera de la tabla (3 columnas: Intento, Modo, Tiempo ms)
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFFEEEEEE),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Intento", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                            Text(text = "Modo", fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
+                            Text(text = "Tiempo", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+                        }
+                    }
+
+                    // Filas de la tabla
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 250.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(historialTiempos) { registro ->
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color(0xFFF9F9F9),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = "#${registro.intento}", modifier = Modifier.weight(1f))
+                                    Text(text = registro.modo, modifier = Modifier.weight(2f), fontWeight = FontWeight.Medium)
+                                    Text(
+                                        text = "${registro.milisegundos} ms",
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.End,
+                                        color = Color(0xFF2E7D32),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                     }
                 }

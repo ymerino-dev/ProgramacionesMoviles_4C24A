@@ -9,7 +9,7 @@ sealed interface PrimosUi {
 
 sealed interface CargaUi {
     data object Inicial : CargaUi
-    data object Cargando : CargaUi
+    data class Cargando(val mensaje: String = "Cargando...") : CargaUi
     data class Exito(
         val modo: String,
         val perfil: String,
@@ -18,3 +18,9 @@ sealed interface CargaUi {
     ) : CargaUi
     data class Error(val mensaje: String) : CargaUi
 }
+
+data class RegistroTiempo(
+    val intento: Int,
+    val modo: String,
+    val milisegundos: Long
+)
