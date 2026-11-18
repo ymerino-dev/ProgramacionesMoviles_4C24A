@@ -90,10 +90,12 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajoPrimos?.cancel()
 
         trabajoPrimos = viewModelScope.launch {
-            _primos.value = PrimosUi.Calculando
+            _primos.value = PrimosUi.Calculando(0f)
             val inicio = System.currentTimeMillis()
             try {
-                val total = repo.contarPrimos(hasta)
+                val total = repo.contarPrimos(hasta) { progreso ->
+                    _primos.value = PrimosUi.Calculando(progreso)
+                }
                 val duracion = System.currentTimeMillis() - inicio
                 _primos.value = PrimosUi.Listo(cantidad = total, milisegundos = duracion)
                 agregarAlHistorial("Contar primos (hasta $hasta): $total primos en $duracion ms")

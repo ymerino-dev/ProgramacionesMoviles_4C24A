@@ -231,13 +231,13 @@ private fun SeccionPrimos(
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "Prueba: Cálculo Intensivo en CPU",
+                    text = "Prueba: Primos con Progreso en Tiempo Real",
                     fontWeight = FontWeight.Bold,
                     color = azulTema
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Realiza el cálculo de números primos en Dispatchers.Default permitiendo cancelación inmediata en medio del proceso con ensureActive().",
+                    text = "Calcula números primos en Dispatchers.Default reportando el porcentaje de avance cada 1% con capacidad de cancelación instantánea.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )
@@ -296,10 +296,25 @@ private fun SeccionPrimos(
                     }
                 }
 
-                when (val estado = estadoPrimos) {
+                when (estadoPrimos) {
                     is PrimosUi.Inicial -> {}
                     is PrimosUi.Calculando -> {
-                        CircularProgressIndicator(color = azulTema)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            LinearProgressIndicator(
+                                progress = { estadoPrimos.progreso },
+                                modifier = Modifier.fillMaxWidth(),
+                                color = azulTema
+                            )
+                            Text(
+                                text = "${(estadoPrimos.progreso * 100).toInt()} %",
+                                color = Color.Gray,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                     is PrimosUi.Listo -> {
                         Column(
@@ -310,12 +325,12 @@ private fun SeccionPrimos(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Primos hasta $numeroInput: ${estado.cantidad}",
+                                text = "Primos hasta $numeroInput: ${estadoPrimos.cantidad}",
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1B5E20)
                             )
                             Text(
-                                text = "Tiempo: ${estado.milisegundos} ms",
+                                text = "Tiempo: ${estadoPrimos.milisegundos} ms",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF2E7D32)
                             )
