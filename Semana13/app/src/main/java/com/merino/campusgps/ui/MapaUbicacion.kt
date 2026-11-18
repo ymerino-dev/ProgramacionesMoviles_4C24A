@@ -3,10 +3,12 @@ package com.merino.campusgps.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -23,6 +25,7 @@ fun MapaUbicacion(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     tienePermiso: Boolean = false,
+    radioMetros: Double = 200.0,
     modifier: Modifier = Modifier
 ) {
     val camara = rememberCameraPositionState {
@@ -55,6 +58,13 @@ fun MapaUbicacion(
     ) {
         if (estado is UbicacionUi.Lista) {
             val pos = LatLng(estado.posicion.latitud, estado.posicion.longitud)
+            Circle(
+                center = pos,
+                radius = radioMetros,
+                fillColor = Color(0x221565C0),
+                strokeColor = Color(0xFF1565C0),
+                strokeWidth = 2f
+            )
             Marker(
                 state = rememberUpdatedMarkerState(position = pos),
                 title = "Estás aquí"
