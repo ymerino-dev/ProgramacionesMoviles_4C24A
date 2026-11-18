@@ -116,7 +116,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 }
                 is UbicacionUi.Error -> {
                     MensajeError(
-                        mensaje = e.mensaje,
+                        error = e,
                         onReintentar = { alPulsar() }
                     )
                 }
