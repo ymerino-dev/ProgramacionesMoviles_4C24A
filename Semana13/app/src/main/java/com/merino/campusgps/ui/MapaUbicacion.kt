@@ -1,41 +1,36 @@
 package com.merino.campusgps.ui
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import com.merino.campusgps.model.LugarConDistancia
 import com.merino.campusgps.model.UbicacionUi
 import com.merino.campusgps.util.formatearDistancia
-
-// COMENTARIO [Estilo Oscuro]: Definición JSON del estilo nocturno para Google Maps
-private const val ESTILO_MAPA_OSCURO_JSON = """
-[
-  {"elementType": "geometry", "stylers": [{"color": "#242f3e"}]},
-  {"elementType": "labels.text.stroke", "stylers": [{"color": "#242f3e"}]},
-  {"elementType": "labels.text.fill", "stylers": [{"color": "#746855"}]},
-  {"featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{"color": "#d59563"}]},
-  {"featureType": "poi", "elementType": "labels.text.fill", "stylers": [{"color": "#d59563"}]},
-  {"featureType": "poi.park", "elementType": "geometry", "stylers": [{"color": "#263c3f"}]},
-  {"featureType": "road", "elementType": "geometry", "stylers": [{"color": "#38414e"}]},
-  {"featureType": "road.highway", "elementType": "geometry", "stylers": [{"color": "#746855"}]},
-  {"featureType": "water", "elementType": "geometry", "stylers": [{"color": "#17263c"}]}
-]
-"""
 
 @Composable
 fun MapaUbicacion(
@@ -44,78 +39,136 @@ fun MapaUbicacion(
     seleccionado: Int?,
     tienePermiso: Boolean = false,
     radioMetros: Double = 200.0,
-    modifier: Modifier = Modifier,
-    esModoOscuro: Boolean = isSystemInDarkTheme()
+    modifier: Modifier = Modifier
 ) {
-    // COMENTARIO: Centra la cámara inicialmente en las coordenadas del Campus en Lima (-12.0464, -77.0428)
-    val camara = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 15.5f)
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Configuración inicial de osmdroid (User Agent y SharedPreferences)
+    remember {
+        Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", android.content.Context.MODE_PRIVATE))
+        Configuration.getInstance().userAgentValue = context.packageName
+        true
     }
 
-    // COMENTARIO [MapStyleOptions]: Se carga el estilo oscuro dinámicamente según el tema del sistema
-    val estiloMapa = remember(esModoOscuro) {
-        if (esModoOscuro) MapStyleOptions(ESTILO_MAPA_OSCURO_JSON) else null
-    }
-
-    LaunchedEffect(estado) {
-        if (estado is UbicacionUi.Lista) {
-            val pos = LatLng(estado.posicion.latitud, estado.posicion.longitud)
-            camara.animate(CameraUpdateFactory.newLatLngZoom(pos, 16f))
+    // Instancia persistente del MapView de osmdroid
+    val mapView = remember {
+        MapView(context).apply {
+            setTileSource(TileSourceFactory.MAPNIK)
+            setMultiTouchControls(true)
+            controller.setZoom(15.0)
+            controller.setCenter(GeoPoint(-12.0464, -77.0428))
         }
     }
 
+    // Gestión del ciclo de vida (onResume, onPause, onDetach) con LifecycleEventObserver
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapView.onDetach()
+        }
+    }
+
+    // Animación de cámara cuando cambia el estado a Lista (ubicación obtenida)
+    LaunchedEffect(estado) {
+        if (estado is UbicacionUi.Lista) {
+            val point = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
+            mapView.controller.animateTo(point)
+            mapView.controller.setZoom(16.0)
+        }
+    }
+
+    // Animación de cámara al seleccionar un lugar de la lista
     LaunchedEffect(seleccionado) {
         val item = lugares.find { it.lugar.id == seleccionado }
         if (item != null) {
-            val destino = LatLng(item.lugar.latitud, item.lugar.longitud)
-            camara.animate(CameraUpdateFactory.newLatLngZoom(destino, 17f))
+            val point = GeoPoint(item.lugar.latitud, item.lugar.longitud)
+            mapView.controller.animateTo(point)
+            mapView.controller.setZoom(17.0)
         }
     }
 
-    GoogleMap(
-        modifier = modifier,
-        cameraPositionState = camara,
-        properties = MapProperties(
-            isMyLocationEnabled = tienePermiso,
-            mapStyleOptions = estiloMapa
-        ),
-        uiSettings = MapUiSettings(
-            myLocationButtonEnabled = tienePermiso,
-            zoomControlsEnabled = true
-        )
-    ) {
-        // COMENTARIO [Circle de Cercanía]: Dibuja el radio de tolerancia (100m/200m/500m) en torno al usuario
-        if (estado is UbicacionUi.Lista) {
-            val pos = LatLng(estado.posicion.latitud, estado.posicion.longitud)
-            Circle(
-                center = pos,
-                radius = radioMetros,
-                fillColor = Color(0x221565C0),
-                strokeColor = Color(0xFF1565C0),
-                strokeWidth = 2f
-            )
-            Marker(
-                state = rememberUpdatedMarkerState(position = pos),
-                title = "Estás aquí"
-            )
+    // Actualización de capas (Overlays, MyLocationOverlay, Círculo de Radio, Marcadores)
+    androidx.compose.runtime.SideEffect {
+        mapView.overlays.clear()
+
+        // 1. Activa el punto azul nativo solo cuando tienePermiso es true (UbicacionUi.Lista)
+        if (tienePermiso) {
+            val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView).apply {
+                enableMyLocation()
+            }
+            mapView.overlays.add(myLocationOverlay)
         }
 
-        lugares.forEach { item ->
-            val esSeleccionado = item.lugar.id == seleccionado
-            val posLugar = LatLng(item.lugar.latitud, item.lugar.longitud)
-            val colorMarcador = if (esSeleccionado) {
-                BitmapDescriptorFactory.HUE_AZURE
-            } else {
-                BitmapDescriptorFactory.HUE_ORANGE
+        // 2. Círculo de radio de cercanía y marcador "Estás aquí"
+        if (estado is UbicacionUi.Lista) {
+            val centerPoint = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
+            
+            val circlePolygon = Polygon(mapView).apply {
+                points = Polygon.pointsAsCircle(centerPoint, radioMetros)
+                fillColor = 0x221565C0.toInt()
+                strokeColor = 0xFF1565C0.toInt()
+                strokeWidth = 2f
             }
+            mapView.overlays.add(circlePolygon)
+
+            val hereMarker = Marker(mapView).apply {
+                position = centerPoint
+                title = "Estás aquí"
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            }
+            mapView.overlays.add(hereMarker)
+        }
+
+        // 3. Marcadores de los lugares de la lista
+        lugares.forEach { item ->
+            val placePoint = GeoPoint(item.lugar.latitud, item.lugar.longitud)
             val textoDistancia = item.metros?.let { " • ${formatearDistancia(it)}" } ?: ""
 
-            Marker(
-                state = rememberUpdatedMarkerState(position = posLugar),
-                title = item.lugar.nombre,
-                snippet = "${item.lugar.categoria}$textoDistancia",
-                icon = BitmapDescriptorFactory.defaultMarker(colorMarcador)
-            )
+            val marker = Marker(mapView).apply {
+                position = placePoint
+                title = item.lugar.nombre
+                subDescription = "${item.lugar.categoria}$textoDistancia"
+            }
+            mapView.overlays.add(marker)
+        }
+
+        mapView.invalidate()
+    }
+
+    Box(modifier = modifier) {
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Botón flotante para centrar la cámara en la ubicación del usuario
+        if (estado is UbicacionUi.Lista) {
+            FloatingActionButton(
+                onClick = {
+                    val pos = estado.posicion
+                    mapView.controller.animateTo(GeoPoint(pos.latitud, pos.longitud))
+                    mapView.controller.setZoom(16.0)
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Centrar en mi ubicación"
+                )
+            }
         }
     }
 }
