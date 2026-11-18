@@ -27,6 +27,7 @@ fun PantallaTareas(viewModel: TareasViewModel) {
     val corriendo by viewModel.corriendo.collectAsState()
     val estadoPrimos by viewModel.primos.collectAsState()
     val estadoCarga by viewModel.carga.collectAsState()
+    val simularError by viewModel.simularError.collectAsState()
 
     var toques by rememberSaveable { mutableIntStateOf(0) }
     var numeroInput by rememberSaveable { mutableStateOf("500000") }
@@ -216,6 +217,19 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                         modifier = Modifier.align(Alignment.Start)
                     )
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Switch(
+                            checked = simularError,
+                            onCheckedChange = { viewModel.cambiarSimularError(it) },
+                            enabled = !cargando
+                        )
+                        Text(text = "Simular error")
+                    }
+
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(
                             onClick = { viewModel.cargarUnaPorUna() },
@@ -266,7 +280,27 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                                 )
                             }
                         }
-                        is CargaUi.Error -> {}
+                        is CargaUi.Error -> {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme.colorScheme.errorContainer,
+                                        RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = estado.mensaje,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            OutlinedButton(onClick = { viewModel.cargarALaVez() }) {
+                                Text("Reintentar")
+                            }
+                        }
                     }
                 }
             }
