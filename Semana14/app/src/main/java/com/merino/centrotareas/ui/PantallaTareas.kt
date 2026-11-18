@@ -1,10 +1,13 @@
 package com.merino.centrotareas.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.merino.centrotareas.viewmodel.TareasViewModel
 
@@ -13,14 +16,21 @@ import com.merino.centrotareas.viewmodel.TareasViewModel
 fun PantallaTareas(viewModel: TareasViewModel) {
     val mensaje by viewModel.mensaje.collectAsState()
     var toques by remember { mutableIntStateOf(0) }
+    val azulTema = Color(0xFF1565C0)
 
     Scaffold(
+        containerColor = Color(0xFFF8F9FA),
         topBar = {
             TopAppBar(
-                title = { Text("CentroTareas") },
+                title = {
+                    Text(
+                        text = "CentroTareas",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = azulTema,
+                    titleContentColor = Color.White
                 )
             )
         }
@@ -32,19 +42,34 @@ fun PantallaTareas(viewModel: TareasViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
+            ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(onClick = { toques++ }) {
+                    Button(
+                        onClick = { toques++ },
+                        colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                    ) {
                         Text("Tócame: $toques")
                     }
-                    Button(onClick = { /* TODO Paso 1 */ }) {
+                    Button(
+                        onClick = { viewModel.tareaLargaMala() },
+                        colors = ButtonDefaults.buttonColors(containerColor = azulTema)
+                    ) {
                         Text("Tarea larga (MAL)")
                     }
-                    Text(text = mensaje)
+                    Text(
+                        text = mensaje,
+                        color = Color.Gray
+                    )
                 }
             }
         }

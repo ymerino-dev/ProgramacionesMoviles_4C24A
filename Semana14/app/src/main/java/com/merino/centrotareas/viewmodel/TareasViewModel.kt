@@ -15,6 +15,12 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     val mensaje: StateFlow<String> = _mensaje.asStateFlow()
 
     // TODO Paso 1: fun tareaLargaMala()
+    fun tareaLargaMala() {
+        _mensaje.value = "Trabajando..."
+        Thread.sleep(4000)
+        _mensaje.value = "Terminó"
+    }
+
     // TODO Paso 2: fun tareaLarga()
     // TODO Paso 3: progreso
     // TODO Paso 4: trabajo (Job), corriendo y cancelar()
