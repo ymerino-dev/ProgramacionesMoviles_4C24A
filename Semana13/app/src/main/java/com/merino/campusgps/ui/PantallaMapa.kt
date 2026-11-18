@@ -47,8 +47,7 @@ fun PantallaMapa(vm: MapaViewModel) {
         if (tieneFine || tieneCoarse) {
             vm.buscar()
         } else {
-
-    // TODO 3: si no -> lanzador.launch(arrayOf(FINE, COARSE))
+            // TODO 3: si no -> lanzador.launch(arrayOf(FINE, COARSE))
             lanzador.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -84,6 +83,9 @@ fun PantallaMapa(vm: MapaViewModel) {
                     .fillMaxWidth()
                     .weight(1f)
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Button(
                 onClick = { alPulsar() },
                 enabled = estado !is UbicacionUi.Buscando
@@ -107,6 +109,17 @@ fun PantallaMapa(vm: MapaViewModel) {
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ListaLugares(
+                lugares = lugares,
+                seleccionado = seleccionado,
+                onSeleccionar = { /* TODO Paso 6: vm.seleccionar(it) */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
         }
     }
 }

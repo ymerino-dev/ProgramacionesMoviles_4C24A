@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.merino.campusgps.data.LugaresRepository
 import com.merino.campusgps.data.UbicacionRepository
 import com.merino.campusgps.model.LugarConDistancia
+import com.merino.campusgps.model.Posicion
 import com.merino.campusgps.model.UbicacionUi
+import com.merino.campusgps.util.calcularDistanciaMetros
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,11 +36,19 @@ class MapaViewModel(
                 .onSuccess {
                     _estado.value = UbicacionUi.Lista(it)
                     // TODO Paso 5: actualizarDistancias(it)
+                    actualizarDistancias(it)
                 }
                 .onFailure { _estado.value = UbicacionUi.Error(mensajeDe(it)) }
         }
     }
-
+    private fun actualizarDistancias(posicion: Posicion) {
+        _lugares.value = lugaresRepo.obtenerLugares()
+            .map { lugar ->
+                val dist = calcularDistanciaMetros(posicion, lugar.latitud, lugar.longitud)
+                LugarConDistancia(lugar, dist)
+            }
+            .sortedBy { it.metros ?: Float.MAX_VALUE }
+    }
     fun permisoDenegado() {
         _estado.value = UbicacionUi.Error("Sin permiso de ubicación no puedo mostrar dónde estás")
     }
