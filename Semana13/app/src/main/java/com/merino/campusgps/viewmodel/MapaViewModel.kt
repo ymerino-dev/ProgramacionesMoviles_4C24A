@@ -27,15 +27,20 @@ class MapaViewModel(
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
     val estado: StateFlow<UbicacionUi> = _estado.asStateFlow()
 
-    private val _lugares = MutableStateFlow(
-        lugaresRepo.obtenerLugares().map { LugarConDistancia(it, null) }
-    )
+    private var categoriaActual = "Todas"
+    private var radioActual = 200.0
+    private var ultimaPosicion: Posicion? = null
+
+    private var listaCompletaLugares: List<LugarConDistancia> = lugaresRepo.obtenerLugares().map {
+        LugarConDistancia(it, null, true)
+    }
+
+    private val _lugares = MutableStateFlow<List<LugarConDistancia>>(listaCompletaLugares)
     val lugares: StateFlow<List<LugarConDistancia>> = _lugares.asStateFlow()
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
 
-    // TODO Paso 7: val masCercano: StateFlow<Lugar?>
     val masCercano: StateFlow<Lugar?> = _lugares
         .map { lista ->
             lista.firstOrNull { it.metros != null }?.lugar
@@ -54,22 +59,60 @@ class MapaViewModel(
         _estado.value = UbicacionUi.Buscando
         viewModelScope.launch {
             ubicacionRepo.obtenerPosicion()
-                .onSuccess {
-                    _estado.value = UbicacionUi.Lista(it)
-                    // TODO Paso 5: actualizarDistancias(it)
-                    actualizarDistancias(it)
+                .onSuccess { pos ->
+                    ultimaPosicion = pos
+                    actualizarDistanciasYEstado(pos)
                 }
                 .onFailure { _estado.value = errorDe(it) }
         }
     }
 
-    private fun actualizarDistancias(posicion: Posicion) {
-        _lugares.value = lugaresRepo.obtenerLugares()
+    private fun actualizarDistanciasYEstado(posicion: Posicion) {
+        listaCompletaLugares = lugaresRepo.obtenerLugares()
             .map { lugar ->
                 val dist = calcularDistanciaMetros(posicion, lugar.latitud, lugar.longitud)
-                LugarConDistancia(lugar, dist)
+                val dentro = dist <= radioActual
+                LugarConDistancia(lugar, dist, dentroDelRadio = dentro)
             }
             .sortedBy { it.metros ?: Float.MAX_VALUE }
+
+        aplicarFiltros(posicion)
+    }
+
+    private fun aplicarFiltros(posicion: Posicion?) {
+        val filtrados = if (categoriaActual.equals("Todas", ignoreCase = true)) {
+            listaCompletaLugares
+        } else {
+            listaCompletaLugares.filter {
+                it.lugar.categoria.equals(categoriaActual, ignoreCase = true)
+            }
+        }
+
+        _lugares.value = filtrados
+
+        if (posicion != null) {
+            _estado.value = UbicacionUi.Lista(
+                posicion = posicion,
+                categoriaSeleccionada = categoriaActual,
+                lugaresFiltrados = filtrados,
+                radioMetros = radioActual
+            )
+        }
+    }
+
+    fun seleccionarCategoria(categoria: String) {
+        categoriaActual = categoria
+        aplicarFiltros(ultimaPosicion)
+    }
+
+    fun cambiarRadio(nuevoRadio: Double) {
+        radioActual = nuevoRadio
+        val pos = ultimaPosicion
+        if (pos != null) {
+            actualizarDistanciasYEstado(pos)
+        } else {
+            aplicarFiltros(null)
+        }
     }
 
     fun permisoDenegado() {
@@ -79,7 +122,6 @@ class MapaViewModel(
         )
     }
 
-    // TODO Paso 6: fun seleccionar(id: Int?)
     fun seleccionar(id: Int?) {
         _seleccionado.value = if (_seleccionado.value == id) null else id
     }

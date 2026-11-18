@@ -11,7 +11,11 @@ data class Lugar(
 )
 
 // metros = null mientras todavía no se conoce la ubicación del usuario
-data class LugarConDistancia(val lugar: Lugar, val metros: Float?)
+data class LugarConDistancia(
+    val lugar: Lugar,
+    val metros: Float?,
+    val dentroDelRadio: Boolean = true
+)
 
 enum class TipoError {
     SIN_PERMISO,
@@ -23,6 +27,11 @@ enum class TipoError {
 sealed interface UbicacionUi {
     data object Inicial : UbicacionUi
     data object Buscando : UbicacionUi
-    data class Lista(val posicion: Posicion) : UbicacionUi
+    data class Lista(
+        val posicion: Posicion,
+        val categoriaSeleccionada: String = "Todas",
+        val lugaresFiltrados: List<LugarConDistancia> = emptyList(),
+        val radioMetros: Double = 200.0
+    ) : UbicacionUi
     data class Error(val mensaje: String, val tipo: TipoError = TipoError.OTRO) : UbicacionUi
 }
