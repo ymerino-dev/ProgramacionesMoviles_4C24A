@@ -1,21 +1,17 @@
-package com.merino.campusgps.data
+package com.merino.campusgps.viewmodel
 
-import android.annotation.SuppressLint
 import android.content.Context
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
-import com.merino.campusgps.model.Posicion
-import kotlinx.coroutines.tasks.await
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.merino.campusgps.data.LugaresRepositoryLocal
+import com.merino.campusgps.data.UbicacionRepositoryGoogle
 
-class UbicacionRepositoryGoogle(private val context: Context) : UbicacionRepository {
-    private val cliente = LocationServices.getFusedLocationProviderClient(context)
-
-    @SuppressLint("MissingPermission")
-    override suspend fun obtenerPosicion(): Result<Posicion> = runCatching {
-        val token = CancellationTokenSource().token
-        val ubicacion = cliente.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, token).await()
-            ?: error("No se pudo obtener la ubicación. Activa el GPS e intenta de nuevo")
-        Posicion(ubicacion.latitude, ubicacion.longitude)
+class CampusViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return MapaViewModel(
+            UbicacionRepositoryGoogle(context.applicationContext),
+            LugaresRepositoryLocal()
+        ) as T
     }
 }

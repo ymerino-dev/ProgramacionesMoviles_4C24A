@@ -1,4 +1,4 @@
-package com.tecsup.campusgps.data
+package com.merino.campusgps.data
 
 import android.annotation.SuppressLint
 import android.content.Context
