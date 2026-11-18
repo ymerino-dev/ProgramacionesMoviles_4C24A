@@ -7,10 +7,10 @@
 
 Este documento registra la metodología de desarrollo asistido por Inteligencia Artificial utilizada durante la **Fase 2** del Laboratorio N° 14 para evolucionar **CentroTareas** (`com.merino.centrotareas`), garantizando la integridad de la arquitectura **MVVM + Repository**, el flujo unidireccional de datos (UDF) y el manejo seguro de corrutinas.
 
-* **Curso:** Programación en Móviles — Laboratorio N° 14
-* **Docente:** Juan León S.
-* **Autora:** Ana Yanira Merino Ramos
-* **Rama de desarrollo:** `conia`
+- **Curso:** Programación en Móviles — Laboratorio N° 14
+- **Docente:** Juan León S.
+- **Autora:** Ana Yanira Merino Ramos
+- **Rama de desarrollo:** `conia`
 
 ---
 
@@ -33,6 +33,7 @@ Antes de aceptar cualquier bloque de código generado por Gemini, se verificaron
 | **2. Primos con Porcentaje en Vivo**<br>«Actualiza `PrimosUi.Calculando` para recibir el progreso `Float`, repórtalo desde `contarPrimos` en `Dispatchers.Default` y muéstralo con `LinearProgressIndicator`» | Sugirió añadir un callback `onProgreso: (Float) -> Unit` dentro del ciclo `for (n in 2..hasta)` junto con `ensureActive()` y dibujar una barra lineal en Compose. | Limité las actualizaciones del progreso a intervalos de 1 % (`val paso = (hasta / 100).coerceAtLeast(1)`) en lugar de emitir en cada iteración del bucle. | Emitir 500 000 actualizaciones seguidas de `StateFlow` degrada el tiempo de cómputo de la CPU y provoca recomposiciones innecesarias en la interfaz. |
 | **3. Tabla Comparativa, Timeout y Reintentos**<br>«Agrupa los interruptores de prueba e implementa `ejecutarConReintentos` (3 intentos con espera creciente), `withTimeout` configurable a 2 s y una tabla acumulada de tiempos» | Generó la función genérica `ejecutarConReintentos`, envolvió las cargas en `withTimeout` y creó `RegistroTiempo` para renderizar una tabla comparativa en pantalla. | Añadí un filtro explícito `if (e is CancellationException) throw e` dentro de `ejecutarConReintentos` y agregué un botón *Limpiar tabla*. | Evita que el mecanismo de reintento capture por error una cancelación del usuario o un vencimiento de `withTimeout` antes de agotar los intentos. |
 | **4. Historial Persistente con DataStore**<br>«Crea `HistorialDataStore` para guardar los últimos 5 resultados exitosos usando `JSONArray`, inyéctalo en `TareasRepositoryLocal` y muéstralo en la pestaña Historial» | Implementó `preferencesDataStore` con serialización mediante `org.json.JSONArray`, expuso un `Flow<List<String>>` desde el Repository y creó las tarjetas de historial en Compose. | Inyecté `applicationContext` en `TareasRepositoryLocal` desde `MainActivity` sin pasarlo al `ViewModel`, y configuré `.stateIn(..., SharingStarted.WhileSubscribed(5000), emptyList())`. | Mantiene el `ViewModel` libre de dependencias del framework de Android, evita fugas de memoria (*memory leaks*) y conserva los datos al rotar la pantalla. |
+| **5. Refinamiento Estético UI/UX (Material 3)**<br>«Mejora el diseño visual y jerarquía de `PantallaTareas.kt` agregando íconos en las pestañas, badges técnicos por sección, botones equilibrados y corrigiendo el desbordamiento en la tabla» | Incorporó `Icons.Rounded` en `PrimaryTabRow`, creó banners educativos con etiquetas píldora, equilibró los botones con `Modifier.weight(1f)` y reemplazó el texto largo por `IconButton`. | Ajusté el tamaño de los íconos en pestañas compactas y restringí el cambio exclusivamente a la capa de Vista (`PantallaTareas.kt`). | Evita saltos de línea forzados en pantallas estrechas, facilita explicar cada concepto técnico durante la sustentación y garantiza que no se altere la lógica probada del `ViewModel`. |
 
 ---
 
@@ -59,7 +60,7 @@ Antes de aceptar cualquier bloque de código generado por Gemini, se verificaron
 > - Mueve la tarea simulada de 100 pasos al Repository creando `fun ejecutarTareaConProgreso(): Flow<Float>` usando `flow { ... }` con `delay(40)` y `.flowOn(Dispatchers.Default)`.
 > - En `TareasViewModel`, refactoriza `tareaLarga()` para recolectar ese `Flow` dentro de `viewModelScope.launch`, guardando el `Job` para cancelar y asegurando `_corriendo.value = false` en `finally`.
 > ```
-* **Commit asociado:** `feat(ui-flow): organiza interfaz por secciones y mueve progreso al Repository con Flow`
+- **Commit asociado:** `feat(ui-flow): organiza interfaz por secciones y mueve progreso al Repository con Flow`
 
 ---
 
@@ -80,7 +81,7 @@ Antes de aceptar cualquier bloque de código generado por Gemini, se verificaron
 > - En `TareasViewModel.contar(hasta)`, actualiza `_primos` con el porcentaje en tiempo real y asegúrate de relanzar `CancellationException` si el usuario cancela.
 > - En la vista de la sección "Primos", coloca el campo numérico y los botones "Contar" / "Cancelar" arriba, y debajo muestra una `LinearProgressIndicator(progress = { estado.progreso })` junto al porcentaje exacto.
 > ```
-* **Commit asociado:** `feat(primos): muestra porcentaje de avance en tiempo real durante el calculo`
+- **Commit asociado:** `feat(primos): muestra porcentaje de avance en tiempo real durante el calculo`
 
 ---
 
@@ -102,7 +103,7 @@ Antes de aceptar cualquier bloque de código generado por Gemini, se verificaron
 > 4. TABLA COMPARATIVA DE TIEMPOS (Estados.kt, TareasViewModel.kt y PantallaTareas.kt):
 > - Crea `data class RegistroTiempo(val intento: Int, val modo: String, val milisegundos: Long)` y expón `val historialTiempos: StateFlow<List<RegistroTiempo>>` para renderizar una tabla comparativa con botón "Limpiar tabla".
 > ```
-* **Commit asociado:** `feat(cargas): agrega tabla comparativa, withTimeout y reintentos automaticos`
+- **Commit asociado:** `feat(cargas): agrega tabla comparativa, withTimeout y reintentos automaticos`
 
 ---
 
@@ -124,7 +125,32 @@ Antes de aceptar cualquier bloque de código generado por Gemini, se verificaron
 > 3. INTERFAZ DE LA PESTAÑA "HISTORIAL" (PantallaTareas.kt):
 > - Muestra una lista limpia con tarjetas individuales para cada uno de los últimos 5 resultados guardados, un botón "Borrar historial" y un mensaje vacío amigable si aún no hay registros.
 > ```
-* **Commit asociado:** `feat(datastore): persiste los ultimos 5 resultados en la seccion Historial`
+- **Commit asociado:** `feat(datastore): persiste los ultimos 5 resultados en la seccion Historial`
+
+---
+
+### 5️⃣ Prompt 5: Refinamiento Estético, Íconos y Badges Técnicos en Material 3
+
+> **Prompt ejecutado:**
+> ```text
+> Actúa como un Senior Android UI/UX Designer experto en Jetpack Compose y Material Design 3.
+> 
+> Mejora únicamente el diseño visual, la jerarquía tipográfica y la distribución estética de `PantallaTareas.kt` en mi proyecto "CentroTareas" (com.merino.centrotareas), sin alterar la lógica del ViewModel ni romper la arquitectura MVVM:
+> 
+> 1. NAVEGACIÓN SUPERIOR CON ÍCONOS Y PESTAÑAS ESTILIZADAS:
+> - En la barra de pestañas (`PrimaryTabRow`), acompaña cada título ("Progreso", "Primos", "Cargas", "Historial") con un ícono representativo de Material Icons (`Icons.Rounded.Speed`, `Icons.Rounded.Calculate`, `Icons.Rounded.SyncAlt`, `Icons.Rounded.History`) en un tamaño compacto y armonioso, usando colores consistentes con el tema azul (`0xFF1565C0`).
+> 
+> 2. BANNER EDUCATIVO DE PRESENTACIÓN POR SECCIÓN (CON BADGES TÉCNICOS):
+> - Mejora la tarjeta superior de introducción de cada pestaña agregando un ícono dentro de un círculo suave a la izquierda del título y una fila de etiquetas tipo píldora que muestren los conceptos técnicos activos en esa prueba (ej. "async / await", "withTimeout", "Reintento x3").
+> 
+> 3. CORRECCIÓN DE ALINEACIÓN Y BOTONES EQUILIBRADOS:
+> - Asegúrate de que los botones de acción tengan `Modifier.weight(1f)`, altura de `48.dp`, bordes redondeados (`12.dp`) e íconos descriptivos.
+> - En el encabezado de "Tabla comparativa de tiempos", reemplaza el texto "Limpiar tabla" por un `IconButton` compacto con `Icons.Rounded.DeleteSweep` para evitar saltos de línea forzados.
+> 
+> 4. TARJETAS CON ELEVACIÓN SUTIL Y TABLA COMPARATIVA PULIDA:
+> - Usa bordes finos, sombras suaves en las tarjetas y cabecera sombreada en las columnas de la tabla comparativa resaltando en verde la ejecución paralela.
+> ```
+- **Commit asociado:** `style(ui): mejora jerarquia visual, iconos, badges tecnicos y alineacion de controles`
 
 ---
 
@@ -136,6 +162,6 @@ git grep -E "GlobalScope|runBlocking|Thread\.sleep"
 
 # 2. Subida final de documentación y código
 git add PROMPTS.md
-git commit -m "docs: agrega PROMPTS.md con registro de mejoras asistidas por IA"
+git commit -m "docs: actualiza PROMPTS.md con el refinamiento visual final"
 git push origin conia
 ```
