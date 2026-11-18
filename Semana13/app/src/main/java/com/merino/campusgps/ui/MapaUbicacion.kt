@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -12,6 +13,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.merino.campusgps.model.LugarConDistancia
 import com.merino.campusgps.model.UbicacionUi
+
 
 @Composable
 fun MapaUbicacion(
@@ -40,5 +42,21 @@ fun MapaUbicacion(
             )
         }
         // TODO 3 (Paso 4): un Marker por cada lugar
+        lugares.forEach { item ->
+            val esSeleccionado = item.lugar.id == seleccionado
+            val posLugar = LatLng(item.lugar.latitud, item.lugar.longitud)
+            val colorMarcador = if (esSeleccionado) {
+                BitmapDescriptorFactory.HUE_AZURE
+            } else {
+                BitmapDescriptorFactory.HUE_ORANGE
+            }
+
+            Marker(
+                state = rememberUpdatedMarkerState(position = posLugar),
+                title = item.lugar.nombre,
+                snippet = item.lugar.categoria,
+                icon = BitmapDescriptorFactory.defaultMarker(colorMarcador)
+            )
+        }
     }
 }
