@@ -1,5 +1,7 @@
 package com.merino.avisoscampus.ui
 
+import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -28,11 +30,13 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { concedido ->
-        // TODO Paso 2: vm.permisoRespondido(concedido)
+        vm.permisoRespondido(concedido)
     }
 
     LaunchedEffect(Unit) {
-        // TODO Paso 2: si Notificador.tienePermiso(contexto), vm.permisoRespondido(true)
+        if (Notificador.tienePermiso(contexto)) {
+            vm.permisoRespondido(true)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -108,8 +112,11 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     }
                     Button(
                         onClick = {
-                            // TODO Paso 2: botón "Permitir notificaciones"
-                            // API 33+ -> lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            if (Notificador.tienePermiso(contexto)) {
+                                vm.permisoRespondido(true)
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                         }
                     ) {
                         Text("Permitir notificaciones")
