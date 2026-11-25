@@ -32,6 +32,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
+    val avisos by vm.avisos.collectAsState()
 
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -234,7 +235,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 }
             }
 
-            // TODO Paso 7: HistorialAvisos(avisos = avisos)
+            HistorialAvisos(avisos = avisos)
 
             // TODO Paso 8: Recuadro de error y botón "Abrir ajustes" cuando mensaje != null
         }
