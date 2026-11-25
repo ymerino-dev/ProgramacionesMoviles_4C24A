@@ -31,6 +31,11 @@ class PostsViewModel(
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
 
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    private var postsOriginales: List<Post> = emptyList()
+
     private val _creacion = MutableStateFlow<UiState<Post>?>(null)
     val creacion: StateFlow<UiState<Post>?> = _creacion.asStateFlow()
 
@@ -43,6 +48,7 @@ class PostsViewModel(
 
     fun filtrar(userId: Int?) {
         _usuarioFiltro.value = userId
+        _busqueda.value = ""
         cargar()
     }
 
@@ -56,9 +62,22 @@ class PostsViewModel(
                 repo.porUsuario(filtroActual)
             }
             resultado
-                .onSuccess { _lista.value = UiState.Exito(it) }
+                .onSuccess {
+                    postsOriginales = it
+                    buscar(_busqueda.value)
+                }
                 .onFailure { _lista.value = UiState.Error(mensajeDe(it)) }
         }
+    }
+
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+        val listaFiltrada = if (texto.isBlank()) {
+            postsOriginales
+        } else {
+            postsOriginales.filter { it.title.contains(texto, ignoreCase = true) }
+        }
+        _lista.value = UiState.Exito(listaFiltrada)
     }
 
     fun abrir(id: Int) {
@@ -104,11 +123,8 @@ class PostsViewModel(
             repo.eliminar(id)
                 .onSuccess {
                     _eliminacion.value = UiState.Exito(Unit)
-                    val estadoListaActual = _lista.value
-                    if (estadoListaActual is UiState.Exito) {
-                        val postsFiltrados = estadoListaActual.datos.filterNot { it.id == id }
-                        _lista.value = UiState.Exito(postsFiltrados)
-                    }
+                    postsOriginales = postsOriginales.filterNot { it.id == id }
+                    buscar(_busqueda.value)
                 }
                 .onFailure {
                     _eliminacion.value = UiState.Error(mensajeDe(it))
