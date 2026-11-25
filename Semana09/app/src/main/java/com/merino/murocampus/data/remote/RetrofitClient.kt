@@ -15,6 +15,12 @@ object RetrofitClient {
     }
 
     private val cliente = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .header("Accept", "application/json")
+                .build()
+            chain.proceed(request)
+        }
         .addInterceptor(logging)
         .build()
 
