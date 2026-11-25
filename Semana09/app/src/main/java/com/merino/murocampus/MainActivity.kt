@@ -7,13 +7,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.merino.murocampus.data.PostRepositoryRemote
 import com.merino.murocampus.data.remote.RetrofitClient
+import com.merino.murocampus.ui.PantallaDetalle
 import com.merino.murocampus.ui.PantallaLista
 import com.merino.murocampus.viewmodel.PostsViewModel
 import com.merino.murocampus.viewmodel.PostsViewModelFactory
@@ -27,6 +29,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 val repo = remember { PostRepositoryRemote(RetrofitClient.api) }
                 val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory(repo))
+                var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -45,11 +48,20 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    PantallaLista(
-                        vm = vm,
-                        alSeleccionarPost = { /* Se conecta en el Paso 7 */ },
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    if (idSeleccionado == null) {
+                        PantallaLista(
+                            vm = vm,
+                            alSeleccionarPost = { idSeleccionado = it },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    } else {
+                        PantallaDetalle(
+                            postId = idSeleccionado!!,
+                            vm = vm,
+                            alVolver = { idSeleccionado = null },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }
