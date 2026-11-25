@@ -5,6 +5,7 @@ import com.merino.murocampus.model.Comentario
 import com.merino.murocampus.model.NuevoPost
 import com.merino.murocampus.model.Post
 import kotlinx.coroutines.CancellationException
+import retrofit2.HttpException
 
 interface PostRepository {
     suspend fun listar(): Result<List<Post>>
@@ -12,6 +13,7 @@ interface PostRepository {
     suspend fun comentarios(id: Int): Result<List<Comentario>>
     suspend fun porUsuario(userId: Int): Result<List<Post>>
     suspend fun crear(nuevo: NuevoPost): Result<Post>
+    suspend fun eliminar(id: Int): Result<Unit>
 }
 
 class PostRepositoryRemote(
@@ -42,4 +44,12 @@ class PostRepositoryRemote(
 
     override suspend fun crear(nuevo: NuevoPost): Result<Post> =
         llamar { api.crear(nuevo) }
+
+    override suspend fun eliminar(id: Int): Result<Unit> =
+        llamar {
+            val response = api.eliminar(id)
+            if (!response.isSuccessful) {
+                throw HttpException(response)
+            }
+        }
 }
