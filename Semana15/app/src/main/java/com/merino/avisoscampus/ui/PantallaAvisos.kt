@@ -1,6 +1,8 @@
 package com.merino.avisoscampus.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,8 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.merino.avisoscampus.model.PermisoUi
 import com.merino.avisoscampus.notificacion.Notificador
+import com.merino.avisoscampus.receiver.ModoAvionReceiver
 import com.merino.avisoscampus.viewmodel.AvisosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +31,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
+    val escuchando by vm.escuchandoAvion.collectAsState()
 
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -47,16 +52,24 @@ fun PantallaAvisos(vm: AvisosViewModel) {
         }
     }
 
-    // TODO Paso 6: val escuchando by vm.escuchandoAvion.collectAsState()
-    // DisposableEffect(escuchando) {
-    //     if (escuchando) {
-    //         // TODO 1: crear ModoAvionReceiver { activo -> vm.alCambiarModoAvion(activo) }
-    //         // TODO 2: registrarlo con RECEIVER_NOT_EXPORTED
-    //         onDispose { /* TODO 3: unregisterReceiver */ }
-    //     } else {
-    //         onDispose {}
-    //     }
-    // }
+    DisposableEffect(escuchando) {
+        if (escuchando) {
+            val receptor = ModoAvionReceiver { activo ->
+                vm.alCambiarModoAvion(activo)
+            }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose {
+                contexto.unregisterReceiver(receptor)
+            }
+        } else {
+            onDispose {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -207,9 +220,9 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     ) {
                         Text("Escuchar el modo avión")
                         Switch(
-                            checked = false, // TODO Paso 6: escuchando
+                            checked = escuchando,
                             onCheckedChange = {
-                                // TODO Paso 6: vm.cambiarEscucha(it)
+                                vm.cambiarEscucha(it)
                             }
                         )
                     }
