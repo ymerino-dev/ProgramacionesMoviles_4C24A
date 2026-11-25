@@ -26,6 +26,7 @@ import com.merino.avisoscampus.viewmodel.AvisosViewModel
 fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
+    val faltan by vm.faltan.collectAsState()
 
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -163,21 +164,28 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = {
-                                // TODO Paso 5: vm.recordarEn(10)
-                            }
+                                vm.recordarEn(10)
+                            },
+                            enabled = faltan == null
                         ) {
                             Text("Recordar en 10 s")
                         }
                         OutlinedButton(
                             onClick = {
-                                // TODO Paso 5: vm.cancelarRecordatorio()
+                                vm.cancelarRecordatorio()
                             },
-                            enabled = false
+                            enabled = faltan != null
                         ) {
                             Text("Cancelar")
                         }
                     }
-                    // TODO Paso 5: mostrar Text("Faltan $faltan s") cuando faltan != null
+                    if (faltan != null) {
+                        Text(
+                            text = "Faltan $faltan s",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
 
