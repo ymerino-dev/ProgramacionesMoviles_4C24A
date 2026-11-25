@@ -1,8 +1,10 @@
 package com.merino.avisoscampus.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.merino.avisoscampus.data.AvisosRepository
 import com.merino.avisoscampus.model.Aviso
+import com.merino.avisoscampus.model.Origen
 import com.merino.avisoscampus.model.PermisoUi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,13 +12,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
 
     val avisos: StateFlow<List<Aviso>> = repo.avisos
 
-    // Evento de una sola vez: "muestra esta notificación".
-    // El ViewModel NO tiene Context: lo recibe la pantalla.
     private val _eventos = MutableSharedFlow<Aviso>()
     val eventos: SharedFlow<Aviso> = _eventos.asSharedFlow()
 
@@ -33,7 +34,16 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
         }
     }
 
-    // TODO Paso 3: fun avisarAhora()
+    fun avisarAhora() {
+        val aviso = repo.registrar(
+            titulo = "Aviso del campus",
+            texto = "Revisa los horarios actualizados en el portal.",
+            origen = Origen.BOTON
+        )
+        viewModelScope.launch {
+            _eventos.emit(aviso)
+        }
+    }
 
     // TODO Paso 5: faltan, recordarEn(segundos) y cancelarRecordatorio()
 
