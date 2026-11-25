@@ -48,7 +48,8 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
         val aviso = repo.registrar(
             titulo = "Aviso del campus",
             texto = "Revisa los horarios actualizados en el portal.",
-            origen = Origen.BOTON
+            origen = Origen.BOTON,
+            esUrgente = false
         )
         viewModelScope.launch {
             _eventos.emit(aviso)
@@ -67,7 +68,8 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
                 val aviso = repo.registrar(
                     titulo = "Recordatorio",
                     texto = "Revisa tu laboratorio pendiente",
-                    origen = Origen.RECORDATORIO
+                    origen = Origen.RECORDATORIO,
+                    esUrgente = true
                 )
                 _eventos.emit(aviso)
             } finally {
@@ -88,7 +90,8 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
         val aviso = repo.registrar(
             titulo = "Modo avión",
             texto = if (activo) "Activado" else "Desactivado",
-            origen = Origen.MODO_AVION
+            origen = Origen.MODO_AVION,
+            esUrgente = false
         )
         viewModelScope.launch {
             _eventos.emit(aviso)

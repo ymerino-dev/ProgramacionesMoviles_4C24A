@@ -16,19 +16,30 @@ import com.merino.avisoscampus.MainActivity
 import com.merino.avisoscampus.model.Aviso
 
 object Notificador {
-    const val CANAL = "avisos"
+    const val CANAL_AVISOS = "avisos"
+    const val CANAL_URGENTES = "urgentes"
 
     fun crearCanal(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val canal = NotificationChannel(
-                CANAL,
+            val canalAvisos = NotificationChannel(
+                CANAL_AVISOS,
                 "Avisos",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notificaciones de la app"
+                description = "Notificaciones generales de la app"
             }
+
+            val canalUrgentes = NotificationChannel(
+                CANAL_URGENTES,
+                "Urgentes",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notificaciones urgentes y recordatorios temporizados"
+            }
+
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(canal)
+            manager.createNotificationChannel(canalAvisos)
+            manager.createNotificationChannel(canalUrgentes)
         }
     }
 
@@ -44,6 +55,9 @@ object Notificador {
     fun mostrar(context: Context, aviso: Aviso): Boolean {
         if (!tienePermiso(context)) return false
 
+        val canalId = if (aviso.esUrgente) CANAL_URGENTES else CANAL_AVISOS
+        val prioridad = if (aviso.esUrgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
+
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -55,11 +69,11 @@ object Notificador {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        val notificacion = NotificationCompat.Builder(context, canalId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(prioridad)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
