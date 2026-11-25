@@ -27,6 +27,7 @@ import com.merino.avisoscampus.model.Aviso
 import com.merino.avisoscampus.model.Origen
 import com.merino.avisoscampus.model.PermisoUi
 import com.merino.avisoscampus.notificacion.Notificador
+import com.merino.avisoscampus.receiver.CargadorReceiver
 import com.merino.avisoscampus.receiver.ModoAvionReceiver
 import com.merino.avisoscampus.viewmodel.AvisosViewModel
 
@@ -37,6 +38,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
+    val escuchandoCargador by vm.escuchandoCargador.collectAsState()
     val avisos by vm.avisos.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
 
@@ -72,6 +74,29 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 contexto,
                 receptor,
                 IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose {
+                contexto.unregisterReceiver(receptor)
+            }
+        } else {
+            onDispose {}
+        }
+    }
+
+    DisposableEffect(escuchandoCargador) {
+        if (escuchandoCargador) {
+            val receptor = CargadorReceiver { conectado ->
+                vm.alCambiarCargador(conectado)
+            }
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                filter,
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
             onDispose {
@@ -198,8 +223,10 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                         onCancelarRecordatorio = { vm.cancelarRecordatorio() }
                     )
                     2 -> PestanaSensores(
-                        escuchando = escuchando,
-                        onCambiarEscucha = { vm.cambiarEscucha(it) }
+                        escuchandoAvion = escuchando,
+                        onCambiarEscuchaAvion = { vm.cambiarEscucha(it) },
+                        escuchandoCargador = escuchandoCargador,
+                        onCambiarEscuchaCargador = { vm.cambiarEscuchaCargador(it) }
                     )
                     3 -> Column(
                         modifier = Modifier
@@ -429,6 +456,7 @@ private fun PestanaAvisos(
                                 Origen.BOTON -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
                                 Origen.RECORDATORIO -> Color(0xFFFFF8E1) to Color(0xFFE65100)
                                 Origen.MODO_AVION -> Color(0xFFF3E5F5) to Color(0xFF7B1FA2)
+                                Origen.CARGADOR -> Color(0xFFE0F2F1) to Color(0xFF00695C)
                             }
                             Surface(
                                 color = colorFondo,
@@ -573,8 +601,10 @@ private fun PestanaRecordatorio(
 
 @Composable
 private fun PestanaSensores(
-    escuchando: Boolean,
-    onCambiarEscucha: (Boolean) -> Unit
+    escuchandoAvion: Boolean,
+    onCambiarEscuchaAvion: (Boolean) -> Unit,
+    escuchandoCargador: Boolean,
+    onCambiarEscuchaCargador: (Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -582,7 +612,7 @@ private fun PestanaSensores(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Receptor de anuncios del sistema: Modo Avión
+        // Receptores Activos de Anuncios del Sistema
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -602,6 +632,7 @@ private fun PestanaSensores(
                     color = MaterialTheme.colorScheme.primary
                 )
 
+                // Switch 1: Modo Avión
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -622,13 +653,47 @@ private fun PestanaSensores(
                                 fontWeight = FontWeight.Bold
                             )
                             Switch(
-                                checked = escuchando,
-                                onCheckedChange = onCambiarEscucha
+                                checked = escuchandoAvion,
+                                onCheckedChange = onCambiarEscuchaAvion
                             )
                         }
 
                         Text(
                             text = "Activa o desactiva la escucha de cambios en el modo avión del celular.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Switch 2: Cargador
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Escuchar el cargador",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Switch(
+                                checked = escuchandoCargador,
+                                onCheckedChange = onCambiarEscuchaCargador
+                            )
+                        }
+
+                        Text(
+                            text = "Activa o desactiva la escucha de conexión y desconexión del cargador.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -659,8 +724,7 @@ private fun PestanaSensores(
 
                 val futuros = listOf(
                     "Batería baja (ACTION_BATTERY_LOW)",
-                    "Conexión Wi-Fi (CONNECTIVITY_ACTION)",
-                    "Carga conectada (ACTION_POWER_CONNECTED)"
+                    "Conexión Wi-Fi (CONNECTIVITY_ACTION)"
                 )
 
                 futuros.forEach { receptor ->

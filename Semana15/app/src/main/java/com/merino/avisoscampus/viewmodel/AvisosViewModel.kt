@@ -37,6 +37,9 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     private val _escuchandoAvion = MutableStateFlow(false)
     val escuchandoAvion: StateFlow<Boolean> = _escuchandoAvion.asStateFlow()
 
+    private val _escuchandoCargador = MutableStateFlow(false)
+    val escuchandoCargador: StateFlow<Boolean> = _escuchandoCargador.asStateFlow()
+
     fun permisoRespondido(concedido: Boolean) {
         _permiso.value = if (concedido) PermisoUi.Concedido else PermisoUi.Denegado
         if (concedido) {
@@ -91,6 +94,22 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             titulo = "Modo avión",
             texto = if (activo) "Activado" else "Desactivado",
             origen = Origen.MODO_AVION,
+            esUrgente = false
+        )
+        viewModelScope.launch {
+            _eventos.emit(aviso)
+        }
+    }
+
+    fun cambiarEscuchaCargador(valor: Boolean) {
+        _escuchandoCargador.value = valor
+    }
+
+    fun alCambiarCargador(conectado: Boolean) {
+        val aviso = repo.registrar(
+            titulo = "Estado de batería",
+            texto = if (conectado) "Cargador conectado" else "Cargador desconectado",
+            origen = Origen.CARGADOR,
             esUrgente = false
         )
         viewModelScope.launch {
