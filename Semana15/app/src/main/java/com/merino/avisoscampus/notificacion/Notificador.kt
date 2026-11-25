@@ -73,6 +73,7 @@ object Notificador {
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(aviso.texto))
             .setPriority(prioridad)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

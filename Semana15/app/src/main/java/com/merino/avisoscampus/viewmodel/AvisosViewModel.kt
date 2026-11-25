@@ -47,7 +47,7 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     fun avisarAhora() {
         val aviso = repo.registrar(
             titulo = "Aviso del campus",
-            texto = "Revisa los horarios actualizados en el portal.",
+            texto = "Revisa los horarios actualizados en el portal.\nAula asignada: Lab 302 - Edificio B.\nFecha límite de entrega: Hoy a las 23:59 hrs.",
             origen = Origen.BOTON,
             esUrgente = false
         )
